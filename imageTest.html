@@ -11,8 +11,6 @@
       <input id="interval" type="number">ms</input>
       <button id="btnStart" onclick="startTimer()" ondblclick="a = 1">Teste başla</button>
       <button id="btnStop" onclick="stopTimer(1)" disabled = true>Durdur</button>
-      <input id="edaFile" type="file" name="edaFile"/>
-      <input id="accFile" type="file" name="accFile"/>
       <output id="selectedFile"></output>
     </div>
     <div>
@@ -24,14 +22,40 @@
     <div>
       <a download="imageShownTime.txt" id="downloadlink" style="display: none">İndir</a>
     </div>
+
+    <div>
+      EDA Dosyası :<input id="edaFile" type="file" name="edaFile"/>
+      ACC Dosyası :<input id="accFile" type="file" name="accFile"/>
+      Kayıt Dosyası: <input id="recordFile" type="file" name="recordFile"/>
+    </div>
+
+
     <div id="edaChartContainer" style="height: 300px; width: 100%;"></div>
     <div id="accChartContainer" style="height: 300px; width: 100%;"></div>
+    <div id="adjustTimeMode" style="display: none">
+      Zaman Ayarlama Modu :<input id="adjustTimeModeOn" type="radio" name="adjustTimeMode"/>Açık
+      <input id="adjustTimeModeOff" type="radio" name="adjustTimeMode" checked/>Kapalı
+    </div>
 
     <!--Contains imageSequence variable-->
     <script type="text/javascript" src="imageSequence.js"></script>
     <script type="text/javascript">
       window.addEventListener('load', init, false);
+      window.addEventListener('keydown',this.keyPress,false);
 
+      var adjustmentInMs = 0;
+      var deltaInMs = 250;
+
+      function keyPress(e) {
+        var code = e.keyCode;
+
+        switch (code) {
+            // + key
+            case 187: adjustmentInMs += deltaInMs; console.log("Adjustment: " + adjustmentInMs); break;
+            // - key
+            case 189: adjustmentInMs -= deltaInMs; console.log("Adjustment: " + adjustmentInMs); break;
+        }
+      }
       var imageIndex = 0;
       var numberOfImages = imageSequence.length;
       var myVar = null;
@@ -41,6 +65,7 @@
       var increment, accIncrement;
       var testStartDate = 0;
       var interval = 1000;
+      var adjustTimeModeOn = false;
 
       var image = document.getElementById("testImage");
 
@@ -108,12 +133,17 @@
             // Update local storage
             var strImagesShownTime = JSON.stringify(imagesShownTimeList);
             localStorage.setItem("imagesShownTime", strImagesShownTime);
+
+            var parsableList = '{"times":' + strImagesShownTime + '}';
+            //console.log(parsableList);
+            imagesShownTimeList = JSON.parse(parsableList);
+
             var link = document.getElementById('downloadlink');
             link.download = testStartDate + "_" + interval + ".txt";
             
             var age = localStorage.getItem("userAge");
             var gender = localStorage.getItem("userGender");
-            var fileContent = age + "\n" + gender + "\n" + strImagesShownTime;
+            var fileContent = age + '\n' + gender + '\n' + JSON.stringify(strImagesShownTime);
             link.href = makeTextFile(fileContent);
             link.style.display = 'block';
           }
@@ -133,17 +163,20 @@
 
         image.src = imageSequence[imageIndex];
 
-        imagesShownTimeList.push({imageFile:image.src.substr(image.src.indexOf("resource")), date:Date.now()});
+        imagesShownTimeList.push({imageFile:image.src.substr(image.src.indexOf("resource")), dateImageShown:Date.now()});
 
         imageIndex++;
       }
 
       function init() {
+        initLocalStorage();
         checkForFileApiSupport();
-        document.getElementById("interval").value = interval;
         loadImages();
+
+        document.getElementById("interval").value = interval;
         document.getElementById('edaFile').addEventListener('change', handleEdaFileSelection, false);
         document.getElementById('accFile').addEventListener('change', handleAccFileSelection, false);
+        document.getElementById('recordFile').addEventListener('change', handleRecordFileSelection, false);
       }
 
       function checkForFileApiSupport() {
@@ -153,6 +186,52 @@
         else {
           document.getElementById('alert').innerHTML = "The File APIs are not fully supported in this browser.";
         }
+      }
+
+      function handleRecordFileSelection(evt){
+        var files = evt.target.files;
+
+        var output = [];
+        for (var i = 0, f; f = files[i]; i++) {
+          output.push('<li><strong>', f.name, '</strong> (', f.type || 'n/a', ') - ',
+                      f.size, ' bytes, last modified: ',
+                      f.lastModifiedDate, '</li>');
+
+          var r = new FileReader();
+            r.onload = (function(f) {
+                return function(e) {
+                    var contents = e.target.result;
+                    var splitted = contents.split('\n');
+
+                    userAge = parseInt(splitted[0]);
+                    userGender = splitted[1];
+
+                    console.log("Age: " + userAge);
+                    console.log("Gender: " + userGender);
+
+                    var imagesShownTimeInfo = splitted[2];
+                    // Remove quotes
+                    imagesShownTimeInfo = imagesShownTimeInfo.slice(1);
+                    imagesShownTimeInfo = imagesShownTimeInfo.slice(0, imagesShownTimeInfo.length-1);
+
+                    // Remove backslashes
+                    //console.log("Before Replace :\n" + imagesShownTimeInfo);
+                    imagesShownTimeInfo = imagesShownTimeInfo.split('\\').join('');
+                    //console.log("After Replace :\n" + imagesShownTimeInfo);
+                    
+                    var parsableList = '{"times":' + imagesShownTimeInfo + '}';
+                    //console.log(parsableList);
+                    imagesShownTimeList = JSON.parse(parsableList);
+                    console.log(imagesShownTimeList);
+                    //console.log("First Answered: " + imagesShownTimeList.times[0].date);
+                };
+            })(f);
+
+            r.readAsText(f);
+
+        }
+        document.getElementById('selectedFile').innerHTML = '<ul>' + output.join('') + '</ul>';
+
       }
 
       function handleEdaFileSelection(evt) {
@@ -211,6 +290,7 @@
 
         }
         document.getElementById('selectedFile').innerHTML = '<ul>' + output.join('') + '</ul>';
+        document.getElementById('adjustTimeMode').style.display = "block";
       }
 
       function drawEdaGraphics(splitted, initTime, frequency, chartSelection){
@@ -319,16 +399,30 @@
 
       function onAccClick(e){
         var timeOfPoint = accInitTime + (e.dataPoint.x * accIncrement);
-        setImageAtTime(timeOfPoint);
+
+        isAdjustTimeModeOn = document.getElementById("adjustTimeModeOn").checked;
+        if(isAdjustTimeModeOn){
+          adjustmentInMs = parseInt(imagesShownTimeList.times[0].dateImageShown) - (timeOfPoint * 1000);
+          console.log("Adjustment: " + adjustmentInMs);
+        } else {
+          setImageAtTime(timeOfPoint);          
+        }
       }
 
       function setImageAtTime(timeOfPoint){
-        console.log("setImageAtTime:" + timeOfPoint);
-        if(imagesShownTimeList != [] && imagesShownTimeList[0] <= timeOfPoint){
-          for (var i = 0; i < imagesShownTimeList.length; i++) {
-            if(parseInt(imagesShownTimeList[i].date) >= timeOfPoint)
+        timeOfPointInMs = timeOfPoint * 1000;
+        timeOfPointInMs += adjustmentInMs;
+
+        console.log("setImageAtTime:" + timeOfPointInMs);
+        console.log("First image is shown at: " + JSON.stringify(imagesShownTimeList.times[0].dateImageShown));
+        
+        if(imagesShownTimeList != [] && parseInt(imagesShownTimeList.times[0].dateImageShown) <= timeOfPointInMs){
+          for (var i = 0; i < imagesShownTimeList.times.length; i++) {
+            //console.log(JSON.stringify(imagesShownTimeList.times[i].dateImageShown));
+
+            if(parseInt(imagesShownTimeList.times[i].dateImageShown) >= timeOfPointInMs)
             {
-              image.src = imagesShownTimeList[i].imageFile;
+              image.src = JSON.stringify(imagesShownTimeList.times[i].imageFile).split('"').join('');
               break;
             }
           }
@@ -337,7 +431,6 @@
           image.src = "resources/images/imageNotFound.png";
         }
       }
-
     </script>
   </body>
 </html>

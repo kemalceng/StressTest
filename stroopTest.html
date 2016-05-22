@@ -86,12 +86,12 @@
           }
         } else {
           switch (code) {
+              // + key
               case 187: adjustmentInMs += deltaInMs; console.log("Adjustment: " + adjustmentInMs); break;
+              // - key
               case 189: adjustmentInMs -= deltaInMs; console.log("Adjustment: " + adjustmentInMs); break;
           }
         }
-
-
       }
 
       var imageIndex = 0;
@@ -149,7 +149,7 @@
 
         }else{
           image.src = "resources/images/Sorry.jpg";
-          stopTimer(true);
+          stopTest(true);
         }
       }
 
@@ -210,6 +210,10 @@
           // Update local storage
           var strImagesShownTime = JSON.stringify(imagesShownTimeList);
           localStorage.setItem("stroopImagesShownTime", strImagesShownTime);
+
+          var parsableList = '{"times":' + strImagesShownTime + '}';
+          //console.log(parsableList);
+          imagesShownTimeList = JSON.parse(parsableList);
 
           var link = document.getElementById('downloadlink');
           link.download= testStartDate + "_" + (isColorSelected ? "Color" : "Word") + ".txt";
@@ -455,7 +459,7 @@
 
       function onAccClick(e){
         var timeOfPoint = accInitTime + (e.dataPoint.x * accIncrement);
-        
+
         isAdjustTimeModeOn = document.getElementById("adjustTimeModeOn").checked;
         if(isAdjustTimeModeOn){
           adjustmentInMs = parseInt(imagesShownTimeList.times[0].dateImageShown) - (timeOfPoint * 1000);
