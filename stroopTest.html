@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="resources/js/canvasjs.min.js"></script>
+    <script src="resources/js/jquery-2.2.3.js"></script>
+    <meta charset='utf-8'>
+    <style>
+      td {
+        text-align: left;
+        border: 1px solid black;
+        width:100px;
+      }
+    </style>
+    <title>Stroop Testi</title>
+  </head>
+  <body>
+    <div>
+      <input id="radioColor" type="radio" name="stroopType" value="Color" checked/>Renk
+      <input id="radioWord" type="radio" name="stroopType" value="Word" />Yazı
+
+      <button id="btnStart" onclick="startTest()" ondblclick="a = 1">Teste başla</button>
+      <button id="btnStop" onclick="stopTest(true)" disabled=true>Durdur</button>
+    </div>
+    <div>
+        <div id="alert"></div>
+    </div>
+    <div>
+      <img id="testImage" src="resources/images/StroopTesti.png" style="width:800px;height:600px"/>
+    </div>
+    <div id="selectionBar" style="display:none">
+      <table>
+        <tr>
+          <td onclick="answer('red')">
+            <input type="radio" name="answerSelection" value="Red" />Kırmızı (1)
+          </td>
+          <td onclick="answer('yellow')">
+            <input type="radio" name="answerSelection" value="Yellow" />Sarı (2)
+          </td>
+          <td onclick="answer('green')">
+            <input type="radio" name="answerSelection" value="Green" />Yeşil (8)
+          </td>
+          <td onclick="answer('blue')">
+            <input type="radio" name="answerSelection" value="Blue" />Mavi (9)
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div>
+      <a id="downloadlink" style="display: none">İndir</a>
+    </div>
+
+    <div>
+      EDA Dosyası :<input id="edaFile" type="file" name="edaFile"/>
+      ACC Dosyası :<input id="accFile" type="file" name="accFile"/>
+      Kayıt Dosyası: <input id="recordFile" type="file" name="recordFile"/>
+    </div>
+    <output id="selectedFile" style="display: none"></output>
+
+    <div id="edaChartContainer" style="height: 300px; width: 100%;"></div>
+    <div id="accChartContainer" style="height: 300px; width: 100%;"></div>
+    <div id="adjustTimeMode" style="display: none">
+      Zaman Ayarlama Modu :<input id="adjustTimeModeOn" type="radio" name="adjustTimeMode"/>Açık
+      <input id="adjustTimeModeOff" type="radio" name="adjustTimeMode" checked/>Kapalı
+    </div>
+    
+    <!--Contains stroopImageSequence variable and answers-->
+    <script type="text/javascript" src="stroopImageSequence.js"></script>
+    <script type="text/javascript">
+      window.addEventListener('load', init, false);
+      window.addEventListener('keydown',this.keyPress,false);
+
+      var adjustmentInMs = 0;
+      var deltaInMs = 250;
+
+      function keyPress(e) {
+        var code = e.keyCode;
+
+        if(isStarted){
+          switch (code) {
+              case 49: answer('red'); break; //1 key
+              case 50: answer('yellow'); break; //2 key
+              case 56: answer('green'); break; //8 key
+              case 57: answer('blue'); break; //9 key
+
+              default: // Do nothing
+          }
+        } else {
+          switch (code) {
+              case 187: adjustmentInMs += deltaInMs; console.log("Adjustment: " + adjustmentInMs); break;
+              case 189: adjustmentInMs -= deltaInMs; console.log("Adjustment: " + adjustmentInMs); break;
+          }
+        }
+
+
+      }
+
+      var imageIndex = 0;
+      var stroopImageIndex = 0;
+      var numberOfImages = stroopImageSequence.length;
+      var myVar = null;
+      var imagesShownTimeList=[];
+      var edaInitTime, accInitTime;
+      var edaFrequency, accFrequency;
+      var increment, accIncrement;
+      var lastImageShownTime = null;
+      var testStartDate = null;
+      var isColorSelected = true;
+      var image = document.getElementById("testImage");
+      var isStarted = false;
+      var adjustTimeModeOn = false;
+
+      // To be changed with onselection
+      function answer(selection){
+        var correctness = false;
+
+        if(isColorSelected){
+          correctness = colorAnswers[stroopImageIndex] == selection;
+        }else{
+          correctness = wordAnswers[stroopImageIndex] == selection;
+        }
+
+        imagesShownTimeList.push({imageFile:image.src.substr(image.src.indexOf("resource")), dateImageShown:lastImageShownTime, dateAnswered:Date.now(), correct:correctness});
+
+        if(++stroopImageIndex < stroopImageSequence.length){
+          setImage();
+        }else{
+          stopTest(false);
+        }
+      }
+
+      function setImage(){
+        image.src = stroopImageSequence[stroopImageIndex];
+        lastImageShownTime = Date.now();
+      }
+
+      function loadImages(fs){
+        var allImages = [];
+        for (i = 0; i < stroopImageSequence.length; i++) {
+          allImages[i] = new Image();
+          allImages[i].src = stroopImageSequence[i];
+        }
+      }
+
+      function initLocalStorage(){
+        if(typeof(Storage) !== "undefined"){
+          // Clear local storage
+          localStorage.setItem("imagesShownTime", null);
+          localStorage.setItem("stroopImagesShownTime", null);
+
+        }else{
+          image.src = "resources/images/Sorry.jpg";
+          stopTimer(true);
+        }
+      }
+
+      var textFile = null,
+        makeTextFile = function (text) {
+          var data = new Blob([text], {type: 'text/plain'});
+
+          // If we are replacing a previously generated file we need to
+          // manually revoke the object URL to avoid memory leaks.
+          if (textFile !== null) {
+            window.URL.revokeObjectURL(textFile);
+          }
+
+          textFile = window.URL.createObjectURL(data);
+
+          // returns a URL you can use as a href
+          return textFile;
+        };
+
+      function startTest(){
+        isStarted = true;
+        initLocalStorage();
+        imagesShownTimeList = [];
+        document.getElementById("btnStart").disabled = true;
+        document.getElementById("btnStop").disabled = false;
+
+        isColorSelected = document.getElementById("radioColor").checked;
+        console.log("Color Selected :" + isColorSelected);
+        document.getElementById("radioColor").disabled = true;
+        document.getElementById("radioWord").disabled = true;
+
+        document.getElementById("selectionBar").style.display="block";
+
+        document.getElementById('downloadlink').style.display="none";
+        // Show first image
+        stroopImageIndex = 0;
+        testStartDate = Date.now();
+        setImage();
+      }
+
+      function stopTest(isStoppedManually){
+        isStarted = false;
+
+        console.log("Test finished!");
+        document.getElementById("btnStart").disabled = false;
+        document.getElementById("btnStop").disabled = true;
+
+        document.getElementById("radioColor").disabled = false;
+        document.getElementById("radioWord").disabled = false;
+
+        document.getElementById("selectionBar").style.display="none";
+
+        if(isStoppedManually) {
+          image.src = "resources/images/StroopTesti.png";
+          initLocalStorage();
+        }else{
+          image.src = "resources/images/TestFinished.png" ;
+          // Update local storage
+          var strImagesShownTime = JSON.stringify(imagesShownTimeList);
+          localStorage.setItem("stroopImagesShownTime", strImagesShownTime);
+
+          var link = document.getElementById('downloadlink');
+          link.download= testStartDate + "_" + (isColorSelected ? "Color" : "Word") + ".txt";
+
+          var age = localStorage.getItem("userAge");
+          var gender = localStorage.getItem("userGender");
+          var fileContent = age + '\n' + gender + '\n' + JSON.stringify(strImagesShownTime);
+
+          link.href = makeTextFile(fileContent);
+          link.style.display = 'block';
+        }
+        stroopImageIndex = 0;
+      }
+
+      function init() {
+        initLocalStorage();
+        checkForFileApiSupport();
+        loadImages();
+
+        document.getElementById('edaFile').addEventListener('change', handleEdaFileSelection, false);
+        document.getElementById('accFile').addEventListener('change', handleAccFileSelection, false);
+        document.getElementById('recordFile').addEventListener('change', handleRecordFileSelection, false);
+      }
+
+      function checkForFileApiSupport() {
+        if (window.File && window.FileReader && window.FileList && window.Blob) {
+        // All the File APIs are supported.
+        }
+        else {
+          document.getElementById('alert').innerHTML = "The File APIs are not fully supported in this browser.";
+        }
+      }
+
+      function handleRecordFileSelection(evt){
+        var files = evt.target.files;
+
+        var output = [];
+        for (var i = 0, f; f = files[i]; i++) {
+          output.push('<li><strong>', f.name, '</strong> (', f.type || 'n/a', ') - ',
+                      f.size, ' bytes, last modified: ',
+                      f.lastModifiedDate, '</li>');
+
+          var r = new FileReader();
+            r.onload = (function(f) {
+                return function(e) {
+                    var contents = e.target.result;
+                    var splitted = contents.split('\n');
+
+                    userAge = parseInt(splitted[0]);
+                    userGender = splitted[1];
+
+                    console.log("Age: " + userAge);
+                    console.log("Gender: " + userGender);
+
+                    var imagesShownTimeInfo = splitted[2];
+                    // Remove quotes
+                    imagesShownTimeInfo = imagesShownTimeInfo.slice(1);
+                    imagesShownTimeInfo = imagesShownTimeInfo.slice(0, imagesShownTimeInfo.length-1);
+
+                    // Remove backslashes
+                    //console.log("Before Replace :\n" + imagesShownTimeInfo);
+                    imagesShownTimeInfo = imagesShownTimeInfo.split('\\').join('');
+                    //console.log("After Replace :\n" + imagesShownTimeInfo);
+                    
+                    var parsableList = '{"times":' + imagesShownTimeInfo + '}';
+                    //console.log(parsableList);
+                    imagesShownTimeList = JSON.parse(parsableList);
+                    console.log(imagesShownTimeList);
+                    //console.log("First Answered: " + imagesShownTimeList.times[0].dateAnswered);
+                };
+            })(f);
+
+            r.readAsText(f);
+
+        }
+        document.getElementById('selectedFile').innerHTML = '<ul>' + output.join('') + '</ul>';
+
+      }
+
+      function handleEdaFileSelection(evt) {
+        var files = evt.target.files;
+
+        var output = [];
+        for (var i = 0, f; f = files[i]; i++) {
+          output.push('<li><strong>', f.name, '</strong> (', f.type || 'n/a', ') - ',
+                      f.size, ' bytes, last modified: ',
+                      f.lastModifiedDate, '</li>');
+
+          var r = new FileReader();
+            r.onload = (function(f) {
+                return function(e) {
+                    var contents = e.target.result;
+                    var splitted = contents.split(/\r\n|\n/);
+
+                    edaInitTime = parseFloat(splitted[0]);
+                    edaFrequency = parseFloat(splitted[1]);
+
+                    drawEdaGraphics(splitted, edaInitTime, edaFrequency, "edaChartContainer");
+                };
+            })(f);
+
+            r.readAsText(f);
+
+        }
+        document.getElementById('selectedFile').innerHTML = '<ul>' + output.join('') + '</ul>';
+      }
+
+      function handleAccFileSelection(evt) {
+        var files = evt.target.files;
+
+        var output = [];
+        for (var i = 0, f; f = files[i]; i++) {
+          output.push('<li><strong>', f.name, '</strong> (', f.type || 'n/a', ') - ',
+                      f.size, ' bytes, last modified: ',
+                      f.lastModifiedDate, '</li>');
+
+          var r = new FileReader();
+            r.onload = (function(f) {
+                return function(e) {
+                    var contents = e.target.result;
+                    var splitted = contents.split(/\r\n|\n/);
+
+                    accInitTime = parseFloat(splitted[0].split(',')[0]);
+                    accFrequency = parseFloat(splitted[1].split(',')[0]);
+
+                    console.log(accFrequency);
+
+                    drawAccGraphics(splitted, accInitTime, accFrequency, "accChartContainer");
+                };
+            })(f);
+
+            r.readAsText(f);
+
+        }
+        document.getElementById('selectedFile').innerHTML = '<ul>' + output.join('') + '</ul>';
+
+        document.getElementById('adjustTimeMode').style.display = "block";
+      }
+
+      function drawEdaGraphics(splitted, initTime, frequency, chartSelection){
+        var contentsAsDataPoint = [];
+
+        // Increment in ms
+        increment = (1/frequency);
+
+        for (var i = 2, time=initTime; i < splitted.length; i++, time+=increment) {
+          //contentsAsDataPoint.push({ x: time,  y: parseFloat(splitted[i]) } );
+          contentsAsDataPoint.push({ y: parseFloat(splitted[i]) } );
+
+        }
+
+        // Chart
+        var chart = new CanvasJS.Chart(chartSelection, {
+          zoomEnabled: true,
+          panEnabled: true,
+          legend: {
+            horizontalAlign: "right",
+            verticalAlign: "center"
+          },
+          axisY:{
+            includeZero: false
+          },
+          title:{
+            text: "EDA"
+          },
+          data: [
+          {
+            click: onClick,
+            type: "line",
+            dataPoints: contentsAsDataPoint
+          }
+          ]
+        });
+        chart.render();
+      }
+
+      function myTrim(x) {
+          return x.replace(/^\s+|\s+$/gm,'');
+      }
+
+      function drawAccGraphics(splitted, initTime, frequency, chartSelection){
+        var xContentsAsDataPoint = [];
+        var yContentsAsDataPoint = [];
+        var zContentsAsDataPoint = [];
+
+        // Increment in ms
+        accIncrement = (1/frequency);
+
+        for (var i = 2, time=initTime; i < splitted.length; i++, time+=increment) {
+          //contentsAsDataPoint.push({ x: time,  y: parseFloat(splitted[i]) } );
+
+          // Check empty line
+          if(!splitted[i]){
+            break;
+          }
+
+          var xyzValues = splitted[i].split(',');
+
+          xContentsAsDataPoint.push({ y: parseFloat(myTrim(xyzValues[0])) } );
+          yContentsAsDataPoint.push({ y: parseFloat(myTrim(xyzValues[1])) } );
+          zContentsAsDataPoint.push({ y: parseFloat(myTrim(xyzValues[2])) } );
+        }
+
+        // Chart
+        var chart = new CanvasJS.Chart(chartSelection, {
+          zoomEnabled: true,
+          panEnabled: true,
+          legend: {
+            horizontalAlign: "right",
+            verticalAlign: "center"
+          },
+          axisY:{
+            includeZero: false
+          },
+          title:{
+            text: "ACC"
+          },
+          data: [
+          {
+            click: onAccClick,
+            type: "line",
+            dataPoints: xContentsAsDataPoint
+          },
+          {
+            click: onAccClick,
+            type: "line",
+            dataPoints: yContentsAsDataPoint
+          },
+          {
+            click: onAccClick,
+            type: "line",
+            dataPoints: zContentsAsDataPoint
+          }
+          ]
+        });
+        chart.render();
+      }
+
+      function onClick(e){
+        var timeOfPoint = edaInitTime + (e.dataPoint.x * increment);
+        setImageAtTime(timeOfPoint);
+      }
+
+      function onAccClick(e){
+        var timeOfPoint = accInitTime + (e.dataPoint.x * accIncrement);
+        
+        isAdjustTimeModeOn = document.getElementById("adjustTimeModeOn").checked;
+        if(isAdjustTimeModeOn){
+          adjustmentInMs = parseInt(imagesShownTimeList.times[0].dateImageShown) - (timeOfPoint * 1000);
+          console.log("Adjustment: " + adjustmentInMs);
+        } else {
+          setImageAtTime(timeOfPoint);          
+        }
+      }
+
+      function setImageAtTime(timeOfPoint){
+        timeOfPointInMs = timeOfPoint * 1000;
+        timeOfPointInMs += adjustmentInMs;
+
+        console.log("setImageAtTime:" + timeOfPointInMs);
+        console.log("First image is shown at: " + JSON.stringify(imagesShownTimeList.times[0].dateImageShown));
+        
+        if(imagesShownTimeList != [] && parseInt(imagesShownTimeList.times[0].dateImageShown) <= timeOfPointInMs){
+          for (var i = 0; i < imagesShownTimeList.times.length; i++) {
+            //console.log(JSON.stringify(imagesShownTimeList.times[i].dateImageShown));
+
+            if(parseInt(imagesShownTimeList.times[i].dateImageShown) >= timeOfPointInMs)
+            {
+              image.src = JSON.stringify(imagesShownTimeList.times[i].imageFile).split('"').join('');
+              break;
+            }
+          }
+        }else{
+          console.log("Image not found!");
+          image.src = "resources/images/imageNotFound.png";
+        }
+      }
+
+    </script>
+  </body>
+</html>

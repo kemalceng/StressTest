@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+  	<style>
+	  td {
+	    text-align: center;
+	  }
+	  tr{
+	  	height: 20px;
+	  }
+	</style>
+  </head>
+  <body>
+    <div align="center">
+      <table>
+    	<tr>
+    		<td>
+    			Yaş: 
+    		</td>
+    		<td>
+    			<input type="number" name="age" id="userAge" min="1" max="100" value="25"/>
+    		</td>
+    	</tr>
+    	<tr>
+       		<td>
+    			Cinsiyet: 
+    		</td>
+    		<td>
+				<input type="radio" name="gender" id="genderMale" value="male" checked> Male<br>
+    		</td>
+    		<td>
+				<input type="radio" name="gender" value="female"> Female<br>
+    		</td>
+    	</tr>
+    	<tr/>
+      </table>
+
+      <table>
+    	<tr>
+    		<td>
+		      <a href="imageTest.html" onclick="setUserInfo()">
+		  	    <img src="resources/images/imageTest.jpg" alt="ImageTest" style="width:200px;height:200px;border:0">
+		      </a>
+		    </td>
+		    <td>
+			  <a href="stroopTest.html" onclick="setUserInfo()">
+		  	    <img src="resources/images/stroopTest.jpg" alt="Stroop Test" style="width:200px;height:200px;border:0">
+		      </a>
+		    </td>
+	    </tr>
+	    <tr>
+	    	<td>
+	    		Resim Testi
+	    	</td>
+	    	<td>
+	    		Stroop Testi
+	    	</td>
+	    </tr>
+	  </table>
+    </div>
+
+    <script type="text/javascript">
+    	function setUserInfo(){
+			var age = document.getElementById("userAge").value;
+    		localStorage.setItem("userAge", age);
+
+			var gender = (document.getElementById("genderMale").checked) ? "M" : "F";
+    		localStorage.setItem("userGender", gender);
+    	}
+    </script>
+  </body>
+</html>
