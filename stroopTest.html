@@ -119,7 +119,7 @@
           correctness = wordAnswers[stroopImageIndex] == selection;
         }
 
-        imagesShownTimeList.push({imageFile:image.src.substr(image.src.indexOf("resource")), dateImageShown:lastImageShownTime, dateAnswered:Date.now(), correct:correctness});
+        imagesShownTimeList.push({imageFile:image.src.substr(image.src.indexOf("resource")), date:lastImageShownTime, dateAnswered:Date.now(), correct:correctness});
 
         if(++stroopImageIndex < stroopImageSequence.length){
           setImage();
@@ -462,7 +462,7 @@
 
         isAdjustTimeModeOn = document.getElementById("adjustTimeModeOn").checked;
         if(isAdjustTimeModeOn){
-          adjustmentInMs = parseInt(imagesShownTimeList.times[0].dateImageShown) - (timeOfPoint * 1000);
+          adjustmentInMs = parseInt(imagesShownTimeList.times[0].date) - (timeOfPoint * 1000);
           console.log("Adjustment: " + adjustmentInMs);
         } else {
           setImageAtTime(timeOfPoint);          
@@ -474,13 +474,13 @@
         timeOfPointInMs += adjustmentInMs;
 
         console.log("setImageAtTime:" + timeOfPointInMs);
-        console.log("First image is shown at: " + JSON.stringify(imagesShownTimeList.times[0].dateImageShown));
+        console.log("First image is shown at: " + JSON.stringify(imagesShownTimeList.times[0].date));
         
-        if(imagesShownTimeList != [] && parseInt(imagesShownTimeList.times[0].dateImageShown) <= timeOfPointInMs){
+        if(imagesShownTimeList != [] && parseInt(imagesShownTimeList.times[0].date) <= timeOfPointInMs){
           for (var i = 0; i < imagesShownTimeList.times.length; i++) {
             //console.log(JSON.stringify(imagesShownTimeList.times[i].dateImageShown));
 
-            if(parseInt(imagesShownTimeList.times[i].dateImageShown) >= timeOfPointInMs)
+            if(parseInt(imagesShownTimeList.times[i].date) >= timeOfPointInMs)
             {
               image.src = JSON.stringify(imagesShownTimeList.times[i].imageFile).split('"').join('');
               break;
