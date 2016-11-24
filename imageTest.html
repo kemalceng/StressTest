@@ -17,6 +17,12 @@
         <div id="alert"></div>
     </div>
     <div>
+    <audio id="warningAudio" controls hidden>
+      <source src="resources/sounds/warning.mp3" type="audio/mpeg">
+      Your browser does not support the audio tag.
+    </audio>
+    </div>
+    <div>
       <img id="testImage" src="resources/images/ResimTesti.png" style="width:800px;height:600px"/>
     </div>
     <div>
@@ -58,7 +64,8 @@
       }
       var imageIndex = 0;
       var numberOfImages = imageSequence.length;
-      var myVar = null;
+      var imageTimer = null;
+      var restTimer = null;
       var imagesShownTimeList=[];
       var edaInitTime, accInitTime;
       var edaFrequency, accFrequency;
@@ -88,15 +95,36 @@
         }
       }
 
+      function startRestTimer(){
+        var restInterval = 30000; // 30sec rest
+        if(restTimer == null){
+
+          image.src = "resources/images/rest.jpg";
+
+          restTimer = setInterval(haveRest, restInterval);
+
+          return restTimer;
+        }
+      }
+
+      function haveRest(){
+        if(restTimer != null){
+          clearInterval(restTimer);
+          restTimer = null;
+
+          var warning  = document.getElementById("warningAudio");
+          warning.play();
+
+          imageTimer = setInterval(imageChanger, interval);
+          imageChanger();
+        }
+      }
+
       function startTimer(){
 
         initLocalStorage();
-        if(myVar == null) {
+        if(imageTimer == null) {
           interval = document.getElementById("interval").value;
-          myVar = setInterval(imageChanger, interval);
-
-          imagesShownTimeList=[];
-          imageChanger();
 
           testStartDate = parseInt(Date.now());
 
@@ -105,7 +133,9 @@
   
           document.getElementById('downloadlink').style.display="none";
 
-          return myVar;
+          imagesShownTimeList=[];
+
+          return startRestTimer();
         }
       }
 
@@ -126,10 +156,9 @@
         };
 
       function stopTimer(isStoppedManually){
-        if(myVar != null) {
+        if(imageTimer != null || restTimer != null) {
           document.getElementById("btnStart").disabled = false;
           document.getElementById("btnStop").disabled = true;
-
 
           if(isStoppedManually) {
             image.src = "resources/images/ResimTesti.png";
@@ -153,8 +182,11 @@
             link.style.display = 'block';
           }
 
-          clearInterval(myVar);
-          myVar = null;
+          clearInterval(restTimer);
+          restTimer = null;
+
+          clearInterval(imageTimer);
+          imageTimer = null;
           imageIndex = 0;
         }
       }
