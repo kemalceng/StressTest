@@ -222,7 +222,7 @@
                     imagesShownTimeInfo = imagesShownTimeInfo.split('\\').join('');
                     console.log("After Replace :\n" + imagesShownTimeInfo);
                     
-                    var parsableList = '{"times": [' + imagesShownTimeInfo + '] }';
+                    var parsableList = '{"times": ' + imagesShownTimeInfo + ' }';
                     console.log(parsableList);
                     imagesShownTimeList = JSON.parse(parsableList);
                     console.log(imagesShownTimeList);
