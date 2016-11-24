@@ -94,6 +94,8 @@
         if(myVar == null) {
           interval = document.getElementById("interval").value;
           myVar = setInterval(imageChanger, interval);
+
+          imagesShownTimeList=[];
           imageChanger();
 
           testStartDate = parseInt(Date.now());
