@@ -9,7 +9,7 @@
   <body>
     <div>
       <input id="interval" type="number">ms</input>
-      <button id="btnStart" onclick="startTimer()" ondblclick="a = 1">Teste başla</button>
+      <button id="btnStart" onclick="startTimer()">Teste başla</button>
       <button id="btnStop" onclick="stopTimer(1)" disabled = true>Durdur</button>
       <output id="selectedFile"></output>
     </div>
@@ -64,7 +64,7 @@
       var edaFrequency, accFrequency;
       var increment, accIncrement;
       var testStartDate = 0;
-      var interval = 1000;
+      var interval = 5000;
       var adjustTimeModeOn = false;
       var categoryShift = 0;
 
@@ -94,7 +94,9 @@
         if(myVar == null) {
           interval = document.getElementById("interval").value;
           myVar = setInterval(imageChanger, interval);
-          testStartDate = parseInt(Date.now()) + interval;
+          imageChanger();
+
+          testStartDate = parseInt(Date.now());
 
           document.getElementById("btnStart").disabled = true;
           document.getElementById("btnStop").disabled = false;
