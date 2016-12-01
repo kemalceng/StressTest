@@ -21,6 +21,10 @@
       <source src="resources/sounds/warning.mp3" type="audio/mpeg">
       Your browser does not support the audio tag.
     </audio>
+    <audio id="noiseAudio" controls hidden>
+      <source src="resources/sounds/chirp.mp3" type="audio/mpeg">
+      Your browser does not support the audio tag.
+    </audio>
     </div>
     <div>
       <img id="testImage" src="resources/images/ResimTesti.png" style="width:800px;height:600px"/>
@@ -66,12 +70,14 @@
       var numberOfImages = imageSequence.length;
       var imageTimer = null;
       var restTimer = null;
+      var noiseTimer = null;
       var imagesShownTimeList=[];
       var edaInitTime, accInitTime;
       var edaFrequency, accFrequency;
       var increment, accIncrement;
       var testStartDate = 0;
-      var interval = 5000;
+      var interval = 1000;
+      var noiseInterval = 3000;
       var adjustTimeModeOn = false;
       var categoryShift = 0;
 
@@ -96,7 +102,7 @@
       }
 
       function startRestTimer(){
-        var restInterval = 30000; // 30sec rest
+        var restInterval = 1; // 30sec rest
         if(restTimer == null){
 
           image.src = "resources/images/rest.jpg";
@@ -116,7 +122,17 @@
           warning.play();
 
           imageTimer = setInterval(imageChanger, interval);
+
+          noiseTimer = setInterval(makeNoise, noiseInterval);
+
           imageChanger();
+        }
+      }
+
+      function makeNoise(){
+        if(noiseTimer != null){
+          var noiseAudio  = document.getElementById("noiseAudio");
+          noiseAudio.play();
         }
       }
 
@@ -188,6 +204,9 @@
           clearInterval(imageTimer);
           imageTimer = null;
           imageIndex = 0;
+
+          clearInterval(noiseTimer);
+          noiseTimer = null;
         }
       }
 
