@@ -1,0 +1,11 @@
+.no-audio .box { color: red; }
+.audio .box { color: green; }
+
+.no-video .box { color: red; }
+.video .box { color: green; }
+
+#videoElement {
+    width: 500px;
+    height: 375px;
+    background-color: #666;
+}
