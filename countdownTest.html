@@ -3,23 +3,68 @@
   <head>
     <script src="resources/js/canvasjs.min.js"></script>
     <script src="resources/js/jquery-2.2.3.js"></script>
-    <script src="resources/js/modernizr-custom.js"></script>
-    <script type="text/javascript">
-    </script>
     <meta charset='utf-8'>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta id="theme-color" name="theme-color" content="#fff">
+    <base target="_blank">
     <title>Geri Sayım Testi</title>
-    <link rel="stylesheet" type="text/css" href="resources/css/mystyle.css">
+    <link rel="stylesheet" href="resources/css/mystyle.css">
+    <style>
+      a#downloadLink {
+        display: block;
+        margin: 0 0 1em 0;
+        min-height: 1.2em;
+      }
+      a#metaDataLink {
+        display: block;
+        margin: 0 0 1em 0;
+        min-height: 1.2em;
+      }
+
+      p#data {
+        min-height: 6em;
+      }
+    </style>
   </head>
   <body>
+    <div id="container">
+    <!-- Test Controls-->
+    <table>
+      <tr>
+        <td>
+          <input id="restInterval" type="number">ms (Dinlenme)</input>          
+        </td>
+        <td>
+          <input id="testInterval" type="number">ms (Test)</input>
+        </td>
+        <td>
+          <button id="btnStart" onclick="onBtnRecordClicked()">Teste başla</button>
+        </td>
+      </tr>
+
+      <tr>
+        <td>
+          <input id="answerSubstractInterval" type="number">ms (Çıkarma)</input>
+        </td>
+        <td>
+          <input id="answerMultiplyInterval" type="number">ms (Çarpma)</input>
+        </td>
+        <td>
+          <button id="btnStop" onclick="stopTimer(1)" disabled = true>Durdur</button>
+        </td>
+      </tr>
+    </table>
+
     <div>
-      <input id="interval" type="number">ms</input>
-      <button id="btnStart" onclick="startTimer()">Teste başla</button>
-      <button id="btnStop" onclick="stopTimer(1)" disabled = true>Durdur</button>
-      <output id="selectedFile"></output>
+      <output id="selectedFile" hidden="true"></output>
     </div>
     <div>
         <div id="alert"></div>
     </div>
+
+    <!-- Audio Controls-->
     <div>
     <audio id="warningAudio" controls hidden>
       <source src="resources/sounds/warning.mp3" type="audio/mpeg">
@@ -30,32 +75,54 @@
       Your browser does not support the audio tag.
     </audio>
     </div>
-    <div>
-      <video id="videoElement" class="video" autoplay="true" controls></video>
-    </div>
-    <div>
+
+    <!-- Directions View-->
+    <div id="directionsView">
       <img id="testImage" src="resources/images/GeriSayimTesti.png" style="width:800px;height:600px"/>
     </div>
-    <div>
-      <a download="imageShownTime.txt" id="downloadlink" style="display: none">İndir</a>
+
+    <div id="container">
+      <p id="substractTest" style="display: none">200 - 17 = ?</p>
+      <p id="wordTest" style="display: none">Makas --- S____?</p>
+      <p id="multiplyTest" style="display: none">40 * 60 = ?</p>
+      <p id="answer" style="display: none">Cevap : xxx</p>
     </div>
 
+    <!-- Video -->
+    <div>
+      <video autoplay controls style="display: none"></video>
+    </div>
+
+    <!-- Recorder Logs -->
+    <!-- <p id="data"></p> -->
+
+    <!-- Download Links-->
+    <div>
+      <a id="downloadLink" download="mediarecorder.webm" name="mediarecorder.webm" style="display: none">İndir (Video)</a>
+      <a download="metaData.txt" id="metaDataLink" style="display: none">İndir (MetaData)</a>
+    </div>
+
+    </div>
+
+    <!-- E3 Wristband Records -->
     <div>
       EDA Dosyası :<input id="edaFile" type="file" name="edaFile"/>
       ACC Dosyası :<input id="accFile" type="file" name="accFile"/>
       Kayıt Dosyası: <input id="recordFile" type="file" name="recordFile"/>
     </div>
 
-
+    <!-- E3 Records Graphics -->
     <div id="edaChartContainer" style="height: 300px; width: 100%;"></div>
     <div id="accChartContainer" style="height: 300px; width: 100%;"></div>
+
+    <!-- Time Adjustment -->
     <div id="adjustTimeMode" style="display: none">
       Zaman Ayarlama Modu :<input id="adjustTimeModeOn" type="radio" name="adjustTimeMode"/>Açık
       <input id="adjustTimeModeOff" type="radio" name="adjustTimeMode" checked/>Kapalı
     </div>
 
-    <!--Contains imageSequence variable-->
-    <script type="text/javascript" src="imageSequence.js"></script>
+    <script src="recorder.js"></script>
+
     <script type="text/javascript">
       window.addEventListener('load', init, false);
       window.addEventListener('keydown',this.keyPress,false);
@@ -73,32 +140,28 @@
             case 189: adjustmentInMs -= deltaInMs; console.log("Adjustment: " + adjustmentInMs); break;
         }
       }
-      var imageIndex = 0;
-      var numberOfImages = imageSequence.length;
-      var imageTimer = null;
+      var testNumber = 0;
+      var numberOfTests = 3;
+      var testChangeTimer = null;
       var restTimer = null;
       var noiseTimer = null;
+      var answerSubstractTimer = null;
+      var answerMultiplyTimer = null;
       var imagesShownTimeList=[];
       var edaInitTime, accInitTime;
       var edaFrequency, accFrequency;
       var increment, accIncrement;
       var testStartDate = 0;
-      var interval = 1000;
+      var testInterval = 3000; //45sec
+      var restInterval = 3000; //90sec
+      var answerSubstractInterval = 5000;
+      var answerMultiplyInterval = 9000;
       var noiseInterval = 3000;
       var adjustTimeModeOn = false;
-      var categoryShift = 0;
 
       var video = document.getElementById("videoElement");
 
       var image = document.getElementById("testImage");
-
-      function loadImages(fs){
-        var allImages = [];
-        for (i = 0; i < imageSequence.length; i++) {
-          allImages[i] = new Image();
-          allImages[i].src = imageSequence[i];
-        }
-      }
 
       function initLocalStorage(){
         if(typeof(Storage) !== "undefined"){
@@ -111,7 +174,6 @@
       }
 
       function startRestTimer(){
-        var restInterval = 90; // 90sec rest
         if(restTimer == null){
 
           image.src = "resources/images/rest.jpg";
@@ -130,11 +192,13 @@
           var warning  = document.getElementById("warningAudio");
           warning.play();
 
-          imageTimer = setInterval(imageChanger, interval);
+          document.getElementById('directionsView').hidden = true;
+
+          testChangeTimer = setInterval(testChanger, testInterval);
 //          noiseInterval = interval * 3;
 //          noiseTimer = setInterval(makeNoise, noiseInterval);
 
-          imageChanger();
+          testChanger();
         }
       }
 
@@ -148,17 +212,23 @@
       function startTimer(){
 
         initLocalStorage();
-        if(imageTimer == null) {
-          interval = document.getElementById("interval").value;
+        if(restTimer == null) {
+          testInterval = document.getElementById("testInterval").value;
+          
+          restInterval = document.getElementById("restInterval").value;
+
+          answerSubstractInterval = document.getElementById("answerSubstractInterval").value;
+
+          answerMultiplyInterval = document.getElementById("answerMultiplyInterval").value;
 
           testStartDate = parseInt(Date.now());
 
           document.getElementById("btnStart").disabled = true;
           document.getElementById("btnStop").disabled = false;
   
-          document.getElementById('downloadlink').style.display="none";
+          document.getElementById('downloadLink').style.display="none";
 
-          imagesShownTimeList=[];
+          document.getElementById('metaDataLink').style.display="none";
 
           return startRestTimer();
         }
@@ -181,93 +251,132 @@
         };
 
       function stopTimer(isStoppedManually){
-        if(imageTimer != null || restTimer != null) {
+        if(testChangeTimer != null || restTimer != null) {
           document.getElementById("btnStart").disabled = false;
           document.getElementById("btnStop").disabled = true;
 
           if(isStoppedManually) {
-            image.src = "resources/images/ResimTesti.png";
+            image.src = "resources/images/GeriSayimTesti.png";
             initLocalStorage();
           }else{
-            // Update local storage
-            var strImagesShownTime = JSON.stringify(imagesShownTimeList);
-            localStorage.setItem("imagesShownTime", strImagesShownTime);
-
-            var parsableList = '{"times":' + strImagesShownTime + '}';
-            //console.log(parsableList);
-            imagesShownTimeList = JSON.parse(parsableList);
-
-            var link = document.getElementById('downloadlink');
-            link.download = testStartDate + "_" + interval + ".txt";
+            var link = document.getElementById('downloadLink');
+            var metaDataLink = document.getElementById('metaDataLink');
+            metaDataLink.download = testStartDate + "_" + testInterval + ".txt";
             
             var age = localStorage.getItem("userAge");
             var gender = localStorage.getItem("userGender");
-            var fileContent = age + '\n' + gender + '\n' + JSON.stringify(strImagesShownTime);
-            link.href = makeTextFile(fileContent);
+            var fileContent = age + '\n' + gender + '\n';
+            metaDataLink.href = makeTextFile(fileContent);
+            
             link.style.display = 'block';
+            metaDataLink.style.display = 'block';
+
+            document.querySelector('video').style.display = "block";
           }
+
+          document.getElementById('directionsView').hidden = false;
+
+          onBtnStopClicked();
 
           clearInterval(restTimer);
           restTimer = null;
 
-          clearInterval(imageTimer);
-          imageTimer = null;
-          imageIndex = 0;
+          clearInterval(testChangeTimer);
+          testChangeTimer = null;
+          testNumber = 0;
 
           clearInterval(noiseTimer);
           noiseTimer = null;
         }
       }
 
-      function imageChanger() {
-        if(imageIndex >= numberOfImages){
+      function clearTestTimers() {
+        clearInterval(answerSubstractTimer);
+        clearInterval(answerMultiplyTimer);
+        answerSubstractTimer = null;
+        answerMultiplyTimer = null;
+      }
+
+      var intervalCount = 0;
+      function showSubstractResult() {
+          intervalCount++;
+          var answerField = document.getElementById('answer');
+          answerField.innerHTML = 200 - intervalCount * 17;
+          answerField.style.display = "block";
+      }
+
+      var multiplyQuestions = ["40 * 60 = ?", "3 * 97 = ?", "15 * 85 = ?", "55 * 45 = ?" , "6 * 94 = ?"];
+      var multiplyAnswers = [2400, 291, 1275, 2475, 564];
+
+      function showMultiplyResult() {
+          intervalCount++;
+          var answerField = document.getElementById('answer');
+
+          answerField.innerHTML = multiplyAnswers[intervalCount-1];
+          answerField.style.display = "block";
+
+          var multiplyQuestionField = document.getElementById('multiplyTest');
+          multiplyQuestionField.innerHTML = multiplyQuestions[intervalCount];
+      }
+
+      function testChanger() {
+        hideTests();
+        clearTestTimers();
+
+        intervalCount = 0;
+
+        if(testNumber >= numberOfTests){
           stopTimer(false);
           image.src = "resources/images/TestFinished.png" ;
           return;
         }
+        
+        console.log("Testing : " + testNumber);
 
-        image.src = imageSequence[imageIndex];
+        
+        switch(testNumber){
+          case 0:
+          document.getElementById('substractTest').style.display = "block";
+          if(answerSubstractTimer == null){
+            answerSubstractTimer = setInterval(showSubstractResult, answerSubstractInterval);
+          }
+          break;
+          case 1:
+          document.getElementById('wordTest').style.display = "block";
 
-        imagesShownTimeList.push({imageFile:image.src.substr(image.src.indexOf("resource")), date:Date.now()});
-
-        imageIndex++;
-      }
-
-      var errorCallback = function(e) {
-        console.log('Reeeejected!', e);
-      };
-
-      function testFeatures() {
-        if (Modernizr.audio && Modernizr.video) {
-          // supported
-          alert("video/ses var")
-
-          navigator.getUserMedia  = navigator.getUserMedia ||
-                                    navigator.webkitGetUserMedia ||
-                                    navigator.mozGetUserMedia ||
-                                    navigator.msGetUserMedia;
-
-          if (navigator.getUserMedia) {
-            navigator.getUserMedia({audio: true, video: true}, function(stream) {
-              video.src = window.URL.createObjectURL(stream);
-            }, errorCallback);
-          } else {
-            video.src = ''; // fallback.
+          break;
+          case 2:
+          document.getElementById('multiplyTest').style.display = "block";
+          if(answerMultiplyTimer == null){
+            answerMultiplyTimer = setInterval(showMultiplyResult, answerMultiplyInterval);
           }
 
-        } else {
-          // not-supported
-          alert("Tarayıcınızda video/ses kaydetme desteklenmiyor!")
+          break;
         }
+
+        testNumber++;
       }
 
+      function hideTests() {
+          document.getElementById('substractTest').style.display = "none";
+          document.getElementById('wordTest').style.display = "none";
+          document.getElementById('multiplyTest').style.display = "none";
+
+          document.getElementById('answer').style.display = "none";
+
+      }
+
+
       function init() {
-        testFeatures();
         initLocalStorage();
         checkForFileApiSupport();
-        loadImages();
 
-        document.getElementById("interval").value = interval;
+        document.getElementById("testInterval").value = testInterval;
+        document.getElementById("restInterval").value = restInterval;
+
+        document.getElementById("answerSubstractInterval").value = answerSubstractInterval;
+        document.getElementById("answerMultiplyInterval").value = answerMultiplyInterval;
+
         document.getElementById('edaFile').addEventListener('change', handleEdaFileSelection, false);
         document.getElementById('accFile').addEventListener('change', handleAccFileSelection, false);
         document.getElementById('recordFile').addEventListener('change', handleRecordFileSelection, false);
@@ -302,30 +411,12 @@
 
                     console.log("Age: " + userAge);
                     console.log("Gender: " + userGender);
-
-                    var imagesShownTimeInfo = splitted[2];
-                    // Remove quotes
-                    imagesShownTimeInfo = imagesShownTimeInfo.slice(1);
-                    imagesShownTimeInfo = imagesShownTimeInfo.slice(0, imagesShownTimeInfo.length-1);
-
-                    // Remove backslashes
-                    console.log("Before Replace :\n" + imagesShownTimeInfo);
-                    imagesShownTimeInfo = imagesShownTimeInfo.split('\\').join('');
-                    console.log("After Replace :\n" + imagesShownTimeInfo);
-                    
-                    var parsableList = '{"times": ' + imagesShownTimeInfo + ' }';
-                    console.log(parsableList);
-                    imagesShownTimeList = JSON.parse(parsableList);
-                    console.log(imagesShownTimeList);
-                    //console.log("First Answered: " + imagesShownTimeList.times[0].date);
                 };
             })(f);
 
             r.readAsText(f);
-
         }
         document.getElementById('selectedFile').innerHTML = '<ul>' + output.join('') + '</ul>';
-
       }
 
       function handleEdaFileSelection(evt) {
@@ -395,41 +486,11 @@
         var contentsAsDataPoint = [];
         // Increment in ms
         increment = (1/frequency);
-        var interval = document.getElementById('interval').value;
-        var pointsInInterval = frequency * (interval / 1000);
-        console.log('Freq: ' + frequency + ',  PointsForOneImage' + pointsInInterval);
 
         for (var i = 2, time=initTime; i < splitted.length; i++, time+=increment) {
           //contentsAsDataPoint.push({ x: time,  y: parseFloat(splitted[i]) } );
           contentsAsDataPoint.push({ y: parseFloat(splitted[i]) } );
         }
-
-        for (var i = 0; i < numberOfImages; i++) {
-          var pathRegexp = /\/categories\/(.*?)\//g;
-          var categoryGroup = [];
-          var path = imageSequence[i];
-          var match = pathRegexp.exec(path);
-
-          while(i < numberOfImages){
-            var currentPathRegexp = /\/categories\/(.*?)\//g;
-            var currentPath = imageSequence[i];
-            var currentMatch = currentPathRegexp.exec(currentPath);
-            if(currentMatch[1] == match[1]){
-
-              for (var j = 0; j < pointsInInterval; j++) {
-                categoryGroup.push({x: pointsInInterval * i + j + categoryShift, y: -0.01});
-              }
-
-              i++;
-            }else{
-              i--;
-              break;
-            }
-          }
-
-          photoTypeDataPoints.push({type: match[1], categoryGroup});
-        }
-        console.log(photoTypeDataPoints);
 
         graphData = [
           {
@@ -438,19 +499,7 @@
             type: "line",
             dataPoints: contentsAsDataPoint
           }
-          ];
-
-          for (var i = 0; i < photoTypeDataPoints.length; i++) {
-            graphData.push(
-              {
-                showInLegend: true,
-                name: photoTypeDataPoints[i].type,
-                type: "line",
-                dataPoints: photoTypeDataPoints[i].categoryGroup
-              }
-              );
-          }
-
+        ];
 
         // Chart
         var chart = new CanvasJS.Chart(chartSelection, {
@@ -482,7 +531,7 @@
  
                 e.chart.render();
             }
-        }
+          }
         });
         chart.render();
 
@@ -552,8 +601,9 @@
       }
 
       function onClick(e){
-        var timeOfPoint = edaInitTime + (e.dataPoint.x * increment);
-        setImageAtTime(timeOfPoint);
+        var timeOfPoint = e.dataPoint.x * increment;
+
+        // TODO: go to record time
       }
 
       function onAccClick(e){
@@ -564,57 +614,12 @@
           adjustmentInMs = parseInt(imagesShownTimeList.times[0].date) - (timeOfPoint * 1000);
           console.log("Adjustment: " + adjustmentInMs);
 
-          categoryShift = (e.dataPoint.x / accFrequency) * edaFrequency;
-
-          shiftCategoryIndexes();
         } else {
-          setImageAtTime(timeOfPoint);          
+          // TODO Go to record 
+
         }
       }
 
-      function shiftCategoryIndexes(){
-        //var interval = document.getElementById('interval').value;
-        //var pointsInInterval = edaFrequency * (interval / 1000);
-
-        for (var i = 1, count = 0; i < graphData.length; i++) {
-          for (var j = 0; j < graphData[i].dataPoints.length; j++) {
-            graphData[i].dataPoints[j].x = count + categoryShift;
-            count++;
-          }
-        }
-        currentEdaChart.render();
-      }
-
-      function setImageAtTime(timeOfPoint){
-        timeOfPointInMs = timeOfPoint * 1000;
-        timeOfPointInMs += adjustmentInMs;
-
-        console.log("setImageAtTime:" + timeOfPointInMs);
-        console.log("First image is shown at: " + JSON.stringify(imagesShownTimeList.times[0].date));
-        
-        if(imagesShownTimeList != [] && parseInt(imagesShownTimeList.times[0].date) <= timeOfPointInMs){
-          for (var i = 1; i < imagesShownTimeList.times.length; i++) {
-            //console.log(JSON.stringify(imagesShownTimeList.times[i].dateImageShown));
-
-            if(parseInt(imagesShownTimeList.times[i].date) >= timeOfPointInMs)
-            {
-              image.src = JSON.stringify(imagesShownTimeList.times[i-1].imageFile).split('"').join('');
-
-              console.log(image.src);
-              break;
-            } else if(i == imagesShownTimeList.times.length - 1 && timeOfPointInMs > parseInt(imagesShownTimeList.times[i].date) ){
-              // Last image
-              image.src = JSON.stringify(imagesShownTimeList.times[i].imageFile).split('"').join('');
-              console.log(image.src);
-              break;
-
-            }
-          }
-        }else{
-          console.log("Image not found!");
-          image.src = "resources/images/imageNotFound.png";
-        }
-      }
     </script>
   </body>
 </html>

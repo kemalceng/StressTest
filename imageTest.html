@@ -402,16 +402,16 @@
           }
           ];
 
-          for (var i = 0; i < photoTypeDataPoints.length; i++) {
-            graphData.push(
-              {
-                showInLegend: true,
-                name: photoTypeDataPoints[i].type,
-                type: "line",
-                dataPoints: photoTypeDataPoints[i].categoryGroup
-              }
-              );
-          }
+        for (var i = 0; i < photoTypeDataPoints.length; i++) {
+          graphData.push(
+            {
+              showInLegend: true,
+              name: photoTypeDataPoints[i].type,
+              type: "line",
+              dataPoints: photoTypeDataPoints[i].categoryGroup
+            }
+            );
+        }
 
 
         // Chart
