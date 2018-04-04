@@ -34,18 +34,21 @@
     </div>
 
     <div>
-      EDA Dosyası :<input id="edaFile" type="file" name="edaFile"/>
-      ACC Dosyası :<input id="accFile" type="file" name="accFile"/>
-      Kayıt Dosyası: <input id="recordFile" type="file" name="recordFile"/>
+       <span id="eda_File">EDA Dosyası :</span><input id="edaFile" type="file" name="edaFile"/>
+       <span id="acc_File">ACC Dosyası :</span><input id="accFile" type="file" name="accFile"/>
+       <span id="record_File">Kayıt Dosyası :</span><input id="recordFile" type="file" name="recordFile"/>
     </div>
 
 
     <div id="edaChartContainer" style="height: 300px; width: 100%;"></div>
     <div id="accChartContainer" style="height: 300px; width: 100%;"></div>
     <div id="adjustTimeMode" style="display: none">
-      Zaman Ayarlama Modu :<input id="adjustTimeModeOn" type="radio" name="adjustTimeMode"/>Açık
+      <span id="adjust_Time_Mode">Zaman Ayarlama Modu :</span><input id="adjustTimeModeOn" type="radio" name="adjustTimeMode"/>Açık
       <input id="adjustTimeModeOff" type="radio" name="adjustTimeMode" checked/>Kapalı
     </div>
+
+    <!--Perform translation -->
+    <script type="text/javascript" src="translate.js"></script>
 
     <!--Contains imageSequence variable-->
     <script type="text/javascript" src="imageSequence.js"></script>
