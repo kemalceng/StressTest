@@ -34,7 +34,7 @@
     <table>
       <tr>
         <td>
-          <input id="restInterval" type="number">ms (Dinlenme)</input>          
+          <input id="restInterval" type="number">ms (<span id="rest">Dinlenme</span>)</input>          
         </td>
         <td>
           <input id="testInterval" type="number">ms (Test)</input>
@@ -46,10 +46,10 @@
 
       <tr>
         <td>
-          <input id="answerSubstractInterval" type="number">ms (Çıkarma)</input>
+          <input id="answerSubstractInterval" type="number">ms (<span id="substract">Çıkarma</span>)</input>
         </td>
         <td>
-          <input id="answerMultiplyInterval" type="number">ms (Çarpma)</input>
+          <input id="answerMultiplyInterval" type="number">ms (<span id="multiply">Çarpma</span>)</input>
         </td>
         <td>
           <button id="btnStop" onclick="stopTimer(1)" disabled = true>Durdur</button>
@@ -106,9 +106,9 @@
 
     <!-- E3 Wristband Records -->
     <div>
-      EDA Dosyası :<input id="edaFile" type="file" name="edaFile"/>
-      ACC Dosyası :<input id="accFile" type="file" name="accFile"/>
-      Kayıt Dosyası: <input id="recordFile" type="file" name="recordFile"/>
+      <span id="eda_File">EDA Dosyası :</span><input id="edaFile" type="file" name="edaFile"/>
+      <span id="acc_File">ACC Dosyası :</span><input id="accFile" type="file" name="accFile"/>
+      <span id="record_File">Kayıt Dosyası :</span><input id="recordFile" type="file" name="recordFile"/>
     </div>
 
     <!-- E3 Records Graphics -->
@@ -117,9 +117,12 @@
 
     <!-- Time Adjustment -->
     <div id="adjustTimeMode" style="display: none">
-      Zaman Ayarlama Modu :<input id="adjustTimeModeOn" type="radio" name="adjustTimeMode"/>Açık
+      <span id="adjust_Time_Mode">Zaman Ayarlama Modu :</span><input id="adjustTimeModeOn" type="radio" name="adjustTimeMode"/>Açık
       <input id="adjustTimeModeOff" type="radio" name="adjustTimeMode" checked/>Kapalı
     </div>
+
+    <!--Perform translation -->
+    <script type="text/javascript" src="translate.js"></script>
 
     <script src="recorder.js"></script>
 
