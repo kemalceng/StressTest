@@ -15,8 +15,8 @@
   </head>
   <body>
     <div>
-      <input id="radioColor" type="radio" name="stroopType" value="Color" checked/>Renk
-      <input id="radioWord" type="radio" name="stroopType" value="Word" />Yazı
+      <input id="radioColor" type="radio" name="stroopType" value="Color" checked/><span id="color">Renk</span>
+      <input id="radioWord" type="radio" name="stroopType" value="Word" /><span id="word">Kelime</span>
 
       <button id="btnStart" onclick="startTest()" ondblclick="a = 1">Teste başla</button>
       <button id="btnStop" onclick="stopTest(true)" disabled=true>Durdur</button>
@@ -31,16 +31,16 @@
       <table>
         <tr>
           <td onclick="answer('red')">
-            <input type="radio" name="answerSelection" value="Red" />Kırmızı (1)
+            <input type="radio" name="answerSelection" value="Red" /><span id="answerRed">Kırmızı (1)</span>
           </td>
           <td onclick="answer('yellow')">
-            <input type="radio" name="answerSelection" value="Yellow" />Sarı (2)
+            <input type="radio" name="answerSelection" value="Yellow" /><span id="answerYellow">Sarı (2)</span>
           </td>
           <td onclick="answer('green')">
-            <input type="radio" name="answerSelection" value="Green" />Yeşil (8)
+            <input type="radio" name="answerSelection" value="Green" /><span id="answerGreen">Yeşil (8)</span>
           </td>
           <td onclick="answer('blue')">
-            <input type="radio" name="answerSelection" value="Blue" />Mavi (9)
+            <input type="radio" name="answerSelection" value="Blue" /><span id="answerBlue">Mavi (9)</span>
           </td>
         </tr>
       </table>
@@ -50,19 +50,22 @@
     </div>
 
     <div>
-      EDA Dosyası :<input id="edaFile" type="file" name="edaFile"/>
-      ACC Dosyası :<input id="accFile" type="file" name="accFile"/>
-      Kayıt Dosyası: <input id="recordFile" type="file" name="recordFile"/>
+      <span id="eda_File">EDA Dosyası :</span><input id="edaFile" type="file" name="edaFile"/>
+      <span id="acc_File">ACC Dosyası :</span><input id="accFile" type="file" name="accFile"/>
+      <span id="record_File">Kayıt Dosyası :</span><input id="recordFile" type="file" name="recordFile"/>
     </div>
     <output id="selectedFile" style="display: none"></output>
 
     <div id="edaChartContainer" style="height: 300px; width: 100%;"></div>
     <div id="accChartContainer" style="height: 300px; width: 100%;"></div>
     <div id="adjustTimeMode" style="display: none">
-      Zaman Ayarlama Modu :<input id="adjustTimeModeOn" type="radio" name="adjustTimeMode"/>Açık
+      <span id="adjust_Time_Mode">Zaman Ayarlama Modu :</span><input id="adjustTimeModeOn" type="radio" name="adjustTimeMode"/>Açık
       <input id="adjustTimeModeOff" type="radio" name="adjustTimeMode" checked/>Kapalı
     </div>
     
+    <!--Perform translation -->
+    <script type="text/javascript" src="translate.js"></script>
+
     <!--Contains stroopImageSequence variable and answers-->
     <script type="text/javascript" src="stroopImageSequence.js"></script>
     <script type="text/javascript">
