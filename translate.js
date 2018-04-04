@@ -18,11 +18,12 @@ var dictionary = {
   answerGreen: { tr: "Yeşil (8)", en: "Green (8)"},
   answerBlue: { tr: "Mavi (9)", en: "Blue (9)"},
   adjust_Time_Mode: { tr: "Zaman Ayarlama Modu :", en: "Adjust Time Mode :"},
-  adjustTimeModeOn: { tr: "Açık", en: "On"},
-  adjustTimeModeOff: { tr: "Kapalı", en: "Off"},
+  adjust_Time_Mode_On: { tr: "Açık", en: "On"},
+  adjust_Time_Mode_Off: { tr: "Kapalı", en: "Off"},
   rest: { tr: "Dinlenme", en: "Rest"},
   substract: { tr: "Çıkarma", en: "Substact"},
-  multiply: { tr: "Çarpma", en: "Multiply"}
+  multiply: { tr: "Çarpma", en: "Multiply"},
+  download: { tr: "İndir", en: "Download"}
 };
 
 function setTextForLang(lang) {
