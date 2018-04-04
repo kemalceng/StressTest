@@ -41,17 +41,17 @@
       <table>
     	<tr>
     		<td>
-		      <a href="imageTest.html" onclick="setUserInfo()">
+		      <a id="imageTestLink" href="imageTest.html" onclick="setUserInfo()">
 		  	    <img src="resources/images/imageTest.jpg" alt="Image Test" style="width:200px;height:200px;border:0">
 		      </a>
 		    </td>
 		    <td>
-  			  <a href="stroopTest.html" onclick="setUserInfo()">
+  			  <a id="stroopTestLink" href="stroopTest.html" onclick="setUserInfo()">
 		  	    <img src="resources/images/stroopTest.jpg" alt="Stroop Test" style="width:200px;height:200px;border:0">
 		      </a>
 		    </td>
         <td>
-          <a href="countdownTest.html" onclick="setUserInfo()">
+          <a id="countdownTestLink" href="countdownTest.html" onclick="setUserInfo()">
             <img src="resources/images/countdown.jpg" alt="Countdown Test" style="width:200px;height:200px;border:0">
           </a>
         </td>
@@ -70,31 +70,12 @@
 	  </table>
     </div>
 
+
+    <!--Perform translation -->
+    <script type="text/javascript" src="translate.js"></script>
+
+
     <script type="text/javascript">
-      var dictionary = {
-        age: { tr: "Yaş", en: "Age"},
-        sex: { tr: "Cinsiyet", en: "Sex"},
-        male: { tr: "Erkek", en: "Male"},
-        female: { tr: "Kadın", en: "Female"},
-        image_test: { tr: "Resim Testi", en: "Image Test"},
-        stroop_test: { tr: "Stroop Testi", en: "Stroop Test"},
-        countdown_test: { tr: "Geri Sayım Testi", en: "Countdown Test"}
-      };
-
-      function setTextForLang(lang) {
-        Object.keys(dictionary).forEach(key => document.getElementById(key).innerText = dictionary[key][lang]);
-      }
-
-      function setLang(lang) {
-        var url = new URL(location.href);
-        url.searchParams.set('lang', lang);
-        location.href = url.href;
-      }
-
-      var langParam = new URL(location.href).searchParams.get('lang');
-
-      langParam && (langParam == 'tr' || langParam == 'en') && setTextForLang(langParam);
-
     	function setUserInfo() {
   			var age = document.getElementById("userAge").value;
       		localStorage.setItem("userAge", age);
