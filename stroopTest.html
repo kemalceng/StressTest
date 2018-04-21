@@ -103,7 +103,7 @@
       var myVar = null;
       var imagesShownTimeList=[];
       var edaInitTime, accInitTime;
-      var edaFrequency, accFrequency;
+      var edaFrequency, accFrequency, edaPeriodInMs;
       var increment, accIncrement;
       var lastImageShownTime = null;
       var testStartDate = null;
@@ -111,7 +111,11 @@
       var image = document.getElementById("testImage");
       var isStarted = false;
       var adjustTimeModeOn = false;
-
+      var graphData = [];
+      var durationsData = [];
+      var edaData = [];
+      var edaDataLength = 0;
+      var currentEdaChart;
       // To be changed with onselection
       function answer(selection){
         var correctness = false;
@@ -138,7 +142,7 @@
 
       function loadImages(fs){
         var allImages = [];
-        for (i = 0; i < stroopImageSequence.length; i++) {
+        for (var i = 0; i < stroopImageSequence.length; i++) {
           allImages[i] = new Image();
           allImages[i].src = stroopImageSequence[i];
         }
@@ -250,6 +254,23 @@
         }
       }
 
+      function prepareDurationsData() {
+        durationsData = [];
+
+        //console.log("imagesShownTimeList:", imagesShownTimeList);
+        var i = edaInitIndex, j = 0;
+        while(i < edaDataLength && j < imagesShownTimeList.times.length) {
+          var diff = imagesShownTimeList.times[j].dateAnswered - imagesShownTimeList.times[j].dateImageShown;
+          while(i * edaPeriodInMs + edaInitTimeInMs + adjustmentInMs < imagesShownTimeList.times[j].dateAnswered) {
+            durationsData.push({x:i, y:diff});
+            i++;
+          }
+          j++;
+        } 
+        
+        drawEdaGraphics(edaData, edaInitTime, edaFrequency, "edaChartContainer");
+      }
+
       function handleRecordFileSelection(evt){
         var files = evt.target.files;
 
@@ -293,7 +314,6 @@
 
         }
         document.getElementById('selectedFile').innerHTML = '<ul>' + output.join('') + '</ul>';
-
       }
 
       function handleEdaFileSelection(evt) {
@@ -309,12 +329,15 @@
             r.onload = (function(f) {
                 return function(e) {
                     var contents = e.target.result;
-                    var splitted = contents.split(/\r\n|\n/);
+                    edaData = contents.split(/\r\n|\n/);
 
-                    edaInitTime = parseFloat(splitted[0]);
-                    edaFrequency = parseFloat(splitted[1]);
+                    edaDataLength = edaData.length - 2;
 
-                    drawEdaGraphics(splitted, edaInitTime, edaFrequency, "edaChartContainer");
+                    edaInitTime = parseFloat(edaData[0]);
+                    edaInitTimeInMs = edaInitTime * 1000;
+                    edaFrequency = parseFloat(edaData[1]);
+                    edaPeriodInMs = 1000 / edaFrequency;
+                    drawEdaGraphics(edaData, edaInitTime, edaFrequency, "edaChartContainer");
                 };
             })(f);
 
@@ -342,8 +365,6 @@
                     accInitTime = parseFloat(splitted[0].split(',')[0]);
                     accFrequency = parseFloat(splitted[1].split(',')[0]);
 
-                    console.log(accFrequency);
-
                     drawAccGraphics(splitted, accInitTime, accFrequency, "accChartContainer");
                 };
             })(f);
@@ -357,6 +378,8 @@
       }
 
       function drawEdaGraphics(splitted, initTime, frequency, chartSelection){
+        graphData = [];
+
         var contentsAsDataPoint = [];
 
         // Increment in ms
@@ -364,8 +387,27 @@
 
         for (var i = 2, time=initTime; i < splitted.length; i++, time+=increment) {
           //contentsAsDataPoint.push({ x: time,  y: parseFloat(splitted[i]) } );
-          contentsAsDataPoint.push({ y: parseFloat(splitted[i]) } );
+          contentsAsDataPoint.push({x: i-2, y: parseFloat(splitted[i]) } );
+        }
 
+        var edaGraphData = {
+          click: onClick,
+          type: "line",
+          dataPoints: contentsAsDataPoint
+        }
+
+        graphData.push(edaGraphData);
+
+        if(durationsData.length) {
+          graphData.push(
+            {
+              showInLegend: true,
+              name: "Durations",
+              type: "scatter",
+              axisYType: "secondary",
+              dataPoints: durationsData
+            }
+          );
         }
 
         // Chart
@@ -379,17 +421,28 @@
           axisY:{
             includeZero: false
           },
+          axisY2:{
+            includeZero:false
+          },
           title:{
             text: "EDA"
           },
-          data: [
-          {
-            click: onClick,
-            type: "line",
-            dataPoints: contentsAsDataPoint
+          data: graphData,
+          legend: {
+            cursor: "pointer",
+            itemclick: function (e) {
+              if (typeof (e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
+                  e.dataSeries.visible = false;
+              } else {
+                  e.dataSeries.visible = true;
+              }
+
+              e.chart.render();
+            }
           }
-          ]
         });
+
+        currentEdaChart = chart;
         chart.render();
       }
 
@@ -461,12 +514,16 @@
       }
 
       function onAccClick(e){
+        edaInitIndex = Math.ceil(e.dataPoint.x / (accFrequency / edaFrequency));
         var timeOfPoint = accInitTime + (e.dataPoint.x * accIncrement);
 
         isAdjustTimeModeOn = document.getElementById("adjustTimeModeOn").checked;
         if(isAdjustTimeModeOn){
-          adjustmentInMs = parseInt(imagesShownTimeList.times[0].date) - (timeOfPoint * 1000);
+          adjustmentInMs = parseInt(imagesShownTimeList.times[0].dateImageShown) - (timeOfPoint * 1000);
           console.log("Adjustment: " + adjustmentInMs);
+
+          prepareDurationsData();
+          
         } else {
           setImageAtTime(timeOfPoint);          
         }
@@ -477,20 +534,16 @@
         timeOfPointInMs += adjustmentInMs;
 
         console.log("setImageAtTime:" + timeOfPointInMs);
-        console.log("First image is shown at: " + JSON.stringify(imagesShownTimeList.times[0].date));
         
-        if(imagesShownTimeList != [] && parseInt(imagesShownTimeList.times[0].date) <= timeOfPointInMs){
+        if(imagesShownTimeList != [] && parseInt(imagesShownTimeList.times[0].dateImageShown) <= timeOfPointInMs){
           for (var i = 0; i < imagesShownTimeList.times.length; i++) {
-            //console.log(JSON.stringify(imagesShownTimeList.times[i].dateImageShown));
 
-            if(parseInt(imagesShownTimeList.times[i].date) >= timeOfPointInMs)
-            {
+            if(parseInt(imagesShownTimeList.times[i].dateImageShown) >= timeOfPointInMs) {
               image.src = JSON.stringify(imagesShownTimeList.times[i].imageFile).split('"').join('');
               break;
             }
           }
         }else{
-          console.log("Image not found!");
           image.src = "resources/images/imageNotFound.png";
         }
       }

@@ -23,7 +23,9 @@ var dictionary = {
   rest: { tr: "Dinlenme", en: "Rest"},
   substract: { tr: "Çıkarma", en: "Substact"},
   multiply: { tr: "Çarpma", en: "Multiply"},
-  download: { tr: "İndir", en: "Download"}
+  download: { tr: "İndir", en: "Download"},
+  downloadVideo: { tr: "İndir (Video)", en: "Download (Video)"},
+  downloadMetadata: { tr: "İndir (Metaveri)", en: "Download (Metadata)"}
 };
 
 function setTextForLang(lang) {
@@ -37,8 +39,6 @@ var langParam = new URL(location.href).searchParams.get('lang');
 
 if(langParam && (langParam == 'tr' || langParam == 'en')) {
   setTextForLang(langParam);
-
-  console.log("hey");
 
   //Set test links
   var imageTestLinkElement = document.getElementById("imageTestLink");
