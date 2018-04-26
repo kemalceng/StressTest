@@ -1,0 +1,182 @@
+[
+  {
+    "imageCode": 34,
+    "delay": 5822,
+    "correct": true,
+    "avgHR": 99.74000000000001,
+    "avgTemperature": 35.47,
+    "rmsEDA": 0,
+    "stdHR": 0.490000000000002
+  },
+  {
+    "imageCode": 32,
+    "delay": 1719,
+    "correct": true,
+    "avgHR": 100.435,
+    "avgTemperature": 35.47,
+    "rmsEDA": 0,
+    "stdHR": 0.2049999999999983
+  },
+  {
+    "imageCode": 43,
+    "delay": 6936,
+    "correct": true,
+    "avgHR": 100.82,
+    "avgTemperature": 35.47,
+    "rmsEDA": 0,
+    "stdHR": 0.17999999999999972
+  },
+  {
+    "imageCode": 41,
+    "delay": 2268,
+    "correct": true,
+    "avgHR": 101.22,
+    "avgTemperature": 35.47,
+    "rmsEDA": 0,
+    "stdHR": 0.21999999999999886
+  },
+  {
+    "imageCode": 11,
+    "delay": 880,
+    "correct": true,
+    "avgHR": 101.44,
+    "avgTemperature": 35.485,
+    "rmsEDA": 0,
+    "stdHR": 0
+  },
+  {
+    "imageCode": 12,
+    "delay": 1323,
+    "correct": true,
+    "avgHR": 101.69,
+    "avgTemperature": 35.485,
+    "rmsEDA": 0,
+    "stdHR": 0.25
+  },
+  {
+    "imageCode": 23,
+    "delay": 1790,
+    "correct": true,
+    "avgHR": 101.86,
+    "avgTemperature": 35.47,
+    "rmsEDA": 0,
+    "stdHR": 0.0799999999999983
+  },
+  {
+    "imageCode": 24,
+    "delay": 2930,
+    "correct": true,
+    "avgHR": 101.75999999999999,
+    "avgTemperature": 35.47,
+    "rmsEDA": 0,
+    "stdHR": 0.020000000000003126
+  },
+  {
+    "imageCode": 23,
+    "delay": 2036,
+    "correct": true,
+    "avgHR": 101.57,
+    "avgTemperature": 35.47,
+    "rmsEDA": 0,
+    "stdHR": 0.1699999999999946
+  },
+  {
+    "imageCode": 34,
+    "delay": 1334,
+    "correct": true,
+    "avgHR": 101.17500000000001,
+    "avgTemperature": 35.47,
+    "rmsEDA": 0,
+    "stdHR": 0.22500000000000142
+  },
+  {
+    "imageCode": 41,
+    "delay": 1737,
+    "correct": true,
+    "avgHR": 100.68,
+    "avgTemperature": 35.47,
+    "rmsEDA": 0,
+    "stdHR": 0.2700000000000031
+  },
+  {
+    "imageCode": 11,
+    "delay": 692,
+    "correct": true,
+    "avgHR": 100.41,
+    "avgTemperature": 35.47,
+    "rmsEDA": 0,
+    "stdHR": 0
+  },
+  {
+    "imageCode": 43,
+    "delay": 2453,
+    "correct": true,
+    "avgHR": 100.225,
+    "avgTemperature": 35.47,
+    "rmsEDA": 0,
+    "stdHR": 0.18499999999999517
+  },
+  {
+    "imageCode": 34,
+    "delay": 1485,
+    "correct": true,
+    "avgHR": 99.935,
+    "avgTemperature": 35.485,
+    "rmsEDA": 0,
+    "stdHR": 0.10500000000000398
+  },
+  {
+    "imageCode": 41,
+    "delay": 1568,
+    "correct": true,
+    "avgHR": 99.63499999999999,
+    "avgTemperature": 35.5,
+    "rmsEDA": 0,
+    "stdHR": 0.19500000000000028
+  },
+  {
+    "imageCode": 43,
+    "delay": 1757,
+    "correct": true,
+    "avgHR": 99.22,
+    "avgTemperature": 35.5,
+    "rmsEDA": 0,
+    "stdHR": 0.21999999999999886
+  },
+  {
+    "imageCode": 11,
+    "delay": 1669,
+    "correct": true,
+    "avgHR": 98.74000000000001,
+    "avgTemperature": 35.525,
+    "rmsEDA": 0,
+    "stdHR": 0.259999999999998
+  },
+  {
+    "imageCode": 43,
+    "delay": 2233,
+    "correct": true,
+    "avgHR": 98.17,
+    "avgTemperature": 35.55,
+    "rmsEDA": 0,
+    "stdHR": 0.3100000000000023
+  },
+  {
+    "imageCode": 11,
+    "delay": 1487,
+    "correct": true,
+    "avgHR": 97.55,
+    "avgTemperature": 35.55,
+    "rmsEDA": 0,
+    "stdHR": 0.3100000000000023
+  },
+  {
+    "imageCode": 23,
+    "delay": 1875,
+    "correct": true,
+    "avgHR": 96.97,
+    "avgTemperature": 35.55,
+    "rmsEDA": 0,
+    "stdHR": 0.269999999999996
+  }
+]

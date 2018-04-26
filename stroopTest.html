@@ -52,12 +52,16 @@
     <div>
       <span id="eda_File">EDA Dosyası :</span><input id="edaFile" type="file" name="edaFile"/>
       <span id="acc_File">ACC Dosyası :</span><input id="accFile" type="file" name="accFile"/>
+      <span id="hr_File">HR Dosyası :</span><input id="hrFile" type="file" name="hrFile"/>
+      <span id="temperature_File">Sıcaklık Dosyası :</span><input id="temperatureFile" type="file" name="temperatureFile"/>
       <span id="record_File">Kayıt Dosyası :</span><input id="recordFile" type="file" name="recordFile"/>
     </div>
     <output id="selectedFile" style="display: none"></output>
 
     <div id="edaChartContainer" style="height: 300px; width: 100%;"></div>
     <div id="accChartContainer" style="height: 300px; width: 100%;"></div>
+    <div id="hrChartContainer" style="height: 300px; width: 100%;"></div>
+    <div id="temperatureChartContainer" style="height: 300px; width: 100%;"></div>
     <div id="adjustTimeMode" style="display: none">
       <span id="adjust_Time_Mode">Zaman Ayarlama Modu :</span><input id="adjustTimeModeOn" type="radio" name="adjustTimeMode"/><span id="adjust_Time_Mode_On">Açık</span>
       <input id="adjustTimeModeOff" type="radio" name="adjustTimeMode" checked/><span id="adjust_Time_Mode_Off">Kapalı</span>
@@ -97,14 +101,48 @@
         }
       }
 
+      const rootMeanSquare = xs => 
+             Math.sqrt(
+                  xs.reduce(
+                      (a, x) => (a + x * x),
+                      0
+                 ) / xs.length
+              );
+
+      function standardDeviation(values){
+        var avg = average(values);
+        
+        var squareDiffs = values.map(function(value){
+          var diff = value - avg;
+          var sqrDiff = diff * diff;
+          return sqrDiff;
+        });
+        
+        var avgSquareDiff = average(squareDiffs);
+
+        var stdDev = Math.sqrt(avgSquareDiff);
+        return stdDev;
+      }
+
+      function average(data){
+        var sum = data.reduce(function(sum, value){
+          return sum + value;
+        }, 0);
+
+        var avg = sum / data.length;
+        return avg;
+      }
+
       var imageIndex = 0;
       var stroopImageIndex = 0;
       var numberOfImages = stroopImageSequence.length;
       var myVar = null;
       var imagesShownTimeList=[];
-      var edaInitTime, accInitTime;
+      var edaInitTime, accInitTime, hrInitTime, temperatureInitTime;
       var edaFrequency, accFrequency, edaPeriodInMs;
-      var increment, accIncrement;
+      var hrFrequency, temperatureFrequency;
+      var edaInitIndex = 0, hrInitIndex = 0, temperatureInitIndex = 0; 
+      var increment, accIncrement, hrIncrement;
       var lastImageShownTime = null;
       var testStartDate = null;
       var isColorSelected = true;
@@ -113,9 +151,10 @@
       var adjustTimeModeOn = false;
       var graphData = [];
       var durationsData = [];
-      var edaData = [];
-      var edaDataLength = 0;
+      var edaData = accData = hrData = temperatureData = [];
+      var edaDataLength = accDataLength = hrDataLength = temperatureDataLength = 0;
       var currentEdaChart;
+      var analyzeTable = [];
       // To be changed with onselection
       function answer(selection){
         var correctness = false;
@@ -242,6 +281,8 @@
 
         document.getElementById('edaFile').addEventListener('change', handleEdaFileSelection, false);
         document.getElementById('accFile').addEventListener('change', handleAccFileSelection, false);
+        document.getElementById('hrFile').addEventListener('change', handleHrFileSelection, false);
+        document.getElementById('temperatureFile').addEventListener('change', handleTemperatureFileSelection, false);
         document.getElementById('recordFile').addEventListener('change', handleRecordFileSelection, false);
       }
 
@@ -255,19 +296,70 @@
       }
 
       function prepareDurationsData() {
+        analyzeTable = [];
+
         durationsData = [];
 
+        const incrementHrIndexOnEdaCount = edaFrequency / hrFrequency;
+        const incrementTemperatureIndexOnEdaCount = edaFrequency / temperatureFrequency;
+        
+        console.log("HR DATA: ", hrData);
+        console.log("Temperature DATA: ", temperatureData);
+
         //console.log("imagesShownTimeList:", imagesShownTimeList);
-        var i = edaInitIndex, j = 0;
+        var i = edaInitIndex, j = 0, h = hrInitIndex, t = temperatureInitIndex;
         while(i < edaDataLength && j < imagesShownTimeList.times.length) {
           var diff = imagesShownTimeList.times[j].dateAnswered - imagesShownTimeList.times[j].dateImageShown;
+          
+          var hrDataInInterval = [], temperatureDataInInterval = [], edaDataInInterval = [];
+          var count = 0;
           while(i * edaPeriodInMs + edaInitTimeInMs + adjustmentInMs < imagesShownTimeList.times[j].dateAnswered) {
             durationsData.push({x:i, y:diff});
+
+            if(count === 0 || count === incrementHrIndexOnEdaCount) {
+              hrDataInInterval.push( hrData[h+2])
+            }
+
+            if(count === 0 || count === incrementTemperatureIndexOnEdaCount) {
+              temperatureDataInInterval.push( temperatureData[t+2])
+            }
+
+            edaDataInInterval.push(edaData[i+2])
+
+            count++;
             i++;
+
+            if(count === incrementHrIndexOnEdaCount) {
+              h++;
+            }
+
+            if(count === incrementTemperatureIndexOnEdaCount) {
+              t++;
+            }
           }
+
+          console.log("EDA Data In Interval: ", JSON.stringify(edaDataInInterval));
+
+          console.log("HR Data In Interval: ", JSON.stringify(hrDataInInterval));
+
+          console.log("Temperature Data In Interval: ", JSON.stringify(temperatureDataInInterval));
+
+          analyzeTable.push({
+            imageCode: imageCodes[j],
+            delay: diff,
+            correct: imagesShownTimeList.times[j].correct,
+            avgHR: hrDataInInterval.reduce((acc,rate) => acc + +rate, 0) / hrDataInInterval.length,
+            avgTemperature: temperatureDataInInterval.reduce((acc,temp) => acc + +temp, 0) / temperatureDataInInterval.length,
+            rmsEDA: rootMeanSquare(edaDataInInterval),
+            stdHR: standardDeviation(hrDataInInterval.map(h => +h))
+          })
+
           j++;
         } 
         
+
+        console.log(JSON.stringify(analyzeTable, null, 2));
+
         drawEdaGraphics(edaData, edaInitTime, edaFrequency, "edaChartContainer");
       }
 
@@ -307,6 +399,66 @@
                     imagesShownTimeList = JSON.parse(parsableList);
                     console.log(imagesShownTimeList);
                     //console.log("First Answered: " + imagesShownTimeList.times[0].dateAnswered);
+                };
+            })(f);
+
+            r.readAsText(f);
+
+        }
+        document.getElementById('selectedFile').innerHTML = '<ul>' + output.join('') + '</ul>';
+      }
+
+      function handleTemperatureFileSelection(evt) {
+        var files = evt.target.files;
+
+        var output = [];
+        for (var i = 0, f; f = files[i]; i++) {
+          output.push('<li><strong>', f.name, '</strong> (', f.type || 'n/a', ') - ',
+                      f.size, ' bytes, last modified: ',
+                      f.lastModifiedDate, '</li>');
+
+          var r = new FileReader();
+            r.onload = (function(f) {
+                return function(e) {
+                    var contents = e.target.result;
+                    temperatureData = contents.split(/\r\n|\n/);
+
+                    temperatureDataLength = temperatureData.length - 2;
+
+                    temperatureInitTime = parseFloat(temperatureData[0].split(',')[0]);
+                    temperatureFrequency = parseFloat(temperatureData[1].split(',')[0]);
+
+                    drawTemperatureGraphics(temperatureData, temperatureInitTime, temperatureFrequency, "temperatureChartContainer");
+                };
+            })(f);
+
+            r.readAsText(f);
+
+        }
+        document.getElementById('selectedFile').innerHTML = '<ul>' + output.join('') + '</ul>';
+      }
+
+      function handleHrFileSelection(evt) {
+        var files = evt.target.files;
+
+        var output = [];
+        for (var i = 0, f; f = files[i]; i++) {
+          output.push('<li><strong>', f.name, '</strong> (', f.type || 'n/a', ') - ',
+                      f.size, ' bytes, last modified: ',
+                      f.lastModifiedDate, '</li>');
+
+          var r = new FileReader();
+            r.onload = (function(f) {
+                return function(e) {
+                    var contents = e.target.result;
+                    hrData = contents.split(/\r\n|\n/);
+
+                    hrDataLength = hrData.length - 2;
+
+                    hrInitTime = parseFloat(hrData[0].split(',')[0]);
+                    hrFrequency = parseFloat(hrData[1].split(',')[0]);
+
+                    drawHrGraphics(hrData, hrInitTime, hrFrequency, "hrChartContainer");
                 };
             })(f);
 
@@ -360,12 +512,15 @@
             r.onload = (function(f) {
                 return function(e) {
                     var contents = e.target.result;
-                    var splitted = contents.split(/\r\n|\n/);
 
-                    accInitTime = parseFloat(splitted[0].split(',')[0]);
-                    accFrequency = parseFloat(splitted[1].split(',')[0]);
+                    accData = contents.split(/\r\n|\n/);
 
-                    drawAccGraphics(splitted, accInitTime, accFrequency, "accChartContainer");
+                    accDataLength = accData.length - 2;
+
+                    accInitTime = parseFloat(accData[0].split(',')[0]);
+                    accFrequency = parseFloat(accData[1].split(',')[0]);
+
+                    drawAccGraphics(accData, accInitTime, accFrequency, "accChartContainer");
                 };
             })(f);
 
@@ -508,6 +663,78 @@
         chart.render();
       }
 
+
+      function drawHrGraphics(splitted, initTime, frequency, chartSelection){
+        var contentsAsDataPoint = [];
+        
+        // Increment in ms
+        hrIncrement = (1/hrFrequency);
+
+        for (var i = 2, time=initTime; i < splitted.length; i++, time+=hrIncrement) {
+          //contentsAsDataPoint.push({ x: time,  y: parseFloat(splitted[i]) } );
+          contentsAsDataPoint.push({x: i-2, y: parseFloat(splitted[i]) } );
+        }
+
+        // Chart
+        var chart = new CanvasJS.Chart(chartSelection, {
+          zoomEnabled: true,
+          panEnabled: true,
+          legend: {
+            horizontalAlign: "right",
+            verticalAlign: "center"
+          },
+          axisY:{
+            includeZero: false
+          },
+          title:{
+            text: "HR"
+          },
+          data: [
+          {
+            type: "line",
+            dataPoints: contentsAsDataPoint
+          }
+          ]
+        });
+        chart.render();
+      }
+
+
+      function drawTemperatureGraphics(splitted, initTime, frequency, chartSelection){
+        var contentsAsDataPoint = [];
+        
+        // Increment in ms
+        temperatureIncrement = (1/temperatureFrequency);
+
+        for (var i = 2, time=initTime; i < splitted.length; i++, time+=temperatureIncrement) {
+          //contentsAsDataPoint.push({ x: time,  y: parseFloat(splitted[i]) } );
+          contentsAsDataPoint.push({x: i-2, y: parseFloat(splitted[i]) } );
+        }
+
+        // Chart
+        var chart = new CanvasJS.Chart(chartSelection, {
+          zoomEnabled: true,
+          panEnabled: true,
+          legend: {
+            horizontalAlign: "right",
+            verticalAlign: "center"
+          },
+          axisY:{
+            includeZero: false
+          },
+          title:{
+            text: "Temperature"
+          },
+          data: [
+          {
+            type: "line",
+            dataPoints: contentsAsDataPoint
+          }
+          ]
+        });
+        chart.render();
+      }
+
       function onClick(e){
         var timeOfPoint = edaInitTime + (e.dataPoint.x * increment);
         setImageAtTime(timeOfPoint);
@@ -515,6 +742,8 @@
 
       function onAccClick(e){
         edaInitIndex = Math.ceil(e.dataPoint.x / (accFrequency / edaFrequency));
+        hrInitIndex = Math.ceil(e.dataPoint.x / (accFrequency / hrFrequency));
+        temperatureInitIndex = Math.ceil(e.dataPoint.x / (accFrequency / temperatureFrequency));
         var timeOfPoint = accInitTime + (e.dataPoint.x * accIncrement);
 
         isAdjustTimeModeOn = document.getElementById("adjustTimeModeOn").checked;
