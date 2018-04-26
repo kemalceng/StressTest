@@ -3,16 +3,16 @@
     "imageCode": 34,
     "delay": 3862,
     "correct": true,
-    "avgHR": 69.655,
+    "avgHR": 65.75,
     "avgTemperature": 35.41,
     "rmsEDA": 0.02316058729960231,
-    "stdHR": 0.25499999999999545
+    "stdHR": 0.25
   },
   {
     "imageCode": 32,
     "delay": 1087,
     "correct": true,
-    "avgHR": 69.91,
+    "avgHR": 65.5,
     "avgTemperature": 35.39,
     "rmsEDA": 0.016627932606009685,
     "stdHR": 0
@@ -21,16 +21,16 @@
     "imageCode": 43,
     "delay": 1519,
     "correct": true,
-    "avgHR": 70.50999999999999,
+    "avgHR": 64.46000000000001,
     "avgTemperature": 35.36,
     "rmsEDA": 0.011310702277047167,
-    "stdHR": 0.17999999999999972
+    "stdHR": 0.21000000000000085
   },
   {
     "imageCode": 41,
     "delay": 976,
     "correct": true,
-    "avgHR": 70.69,
+    "avgHR": 64.25,
     "avgTemperature": 35.36,
     "rmsEDA": 0.007851739759441853,
     "stdHR": 0
@@ -39,43 +39,43 @@
     "imageCode": 11,
     "delay": 1391,
     "correct": true,
-    "avgHR": 71.335,
+    "avgHR": 64.5,
     "avgTemperature": 35.39,
-    "rmsEDA": 0.009482622443185217,
-    "stdHR": 0.26500000000000057
+    "rmsEDA": 0.009351472237033052,
+    "stdHR": 0.5
   },
   {
     "imageCode": 12,
     "delay": 968,
     "correct": true,
-    "avgHR": 71.6,
+    "avgHR": 65,
     "avgTemperature": 35.41,
-    "rmsEDA": 0.009159638093287311,
+    "rmsEDA": 0.009318374750996013,
     "stdHR": 0
   },
   {
     "imageCode": 23,
     "delay": 1447,
     "correct": true,
-    "avgHR": 72.295,
+    "avgHR": 65.35499999999999,
     "avgTemperature": 35.41,
     "rmsEDA": 0.009974858695741006,
-    "stdHR": 0.23499999999999943
+    "stdHR": 0.3549999999999969
   },
   {
     "imageCode": 24,
     "delay": 1439,
     "correct": true,
-    "avgHR": 72.765,
+    "avgHR": 66.54499999999999,
     "avgTemperature": 35.41,
     "rmsEDA": 0.04303734511638312,
-    "stdHR": 0.23499999999999943
+    "stdHR": 0.8350000000000009
   },
   {
     "imageCode": 23,
     "delay": 935,
     "correct": true,
-    "avgHR": 73,
+    "avgHR": 67.38,
     "avgTemperature": 35.43,
     "rmsEDA": 0.046731854141473995,
     "stdHR": 0
@@ -84,25 +84,25 @@
     "imageCode": 34,
     "delay": 943,
     "correct": true,
-    "avgHR": 73.11,
+    "avgHR": 68.56,
     "avgTemperature": 35.43,
-    "rmsEDA": 0.03578925271176624,
+    "rmsEDA": 0.03648925526096689,
     "stdHR": 0
   },
   {
     "imageCode": 41,
     "delay": 1111,
     "correct": true,
-    "avgHR": 73.18,
+    "avgHR": 69.4,
     "avgTemperature": 35.41,
-    "rmsEDA": 0.036038818032782374,
-    "stdHR": 0.07000000000000028
+    "rmsEDA": 0.03539325803384029,
+    "stdHR": 0
   },
   {
     "imageCode": 11,
     "delay": 751,
     "correct": true,
-    "avgHR": 73.25,
+    "avgHR": 69.91,
     "avgTemperature": 35.36,
     "rmsEDA": 0.03434400039308176,
     "stdHR": 0
@@ -111,16 +111,16 @@
     "imageCode": 43,
     "delay": 1311,
     "correct": true,
-    "avgHR": 73.315,
+    "avgHR": 70.12,
     "avgTemperature": 35.379999999999995,
     "rmsEDA": 0.03170940909887789,
-    "stdHR": 0.06499999999999773
+    "stdHR": 0.21000000000000085
   },
   {
     "imageCode": 34,
     "delay": 895,
     "correct": true,
-    "avgHR": 73.38,
+    "avgHR": 70.33,
     "avgTemperature": 35.43,
     "rmsEDA": 0.03297938632312615,
     "stdHR": 0
@@ -129,7 +129,7 @@
     "imageCode": 41,
     "delay": 895,
     "correct": true,
-    "avgHR": 73.55,
+    "avgHR": 70.69,
     "avgTemperature": 35.41,
     "rmsEDA": 0.026244795731725556,
     "stdHR": 0
@@ -138,7 +138,7 @@
     "imageCode": 43,
     "delay": 944,
     "correct": true,
-    "avgHR": 73.55,
+    "avgHR": 70.69,
     "avgTemperature": 35.41,
     "rmsEDA": 0.026669828753668443,
     "stdHR": 0
@@ -147,7 +147,7 @@
     "imageCode": 11,
     "delay": 696,
     "correct": true,
-    "avgHR": 73.65,
+    "avgHR": 71.07,
     "avgTemperature": 35.41,
     "rmsEDA": 0.02793306875371913,
     "stdHR": 0
@@ -156,7 +156,7 @@
     "imageCode": 43,
     "delay": 743,
     "correct": true,
-    "avgHR": 73.65,
+    "avgHR": 71.07,
     "avgTemperature": 35.41,
     "rmsEDA": 0.025181027818578016,
     "stdHR": 0
@@ -165,7 +165,7 @@
     "imageCode": 11,
     "delay": 536,
     "correct": true,
-    "avgHR": 73.65,
+    "avgHR": 71.07,
     "avgTemperature": 35.43,
     "rmsEDA": 0.013007414981463458,
     "stdHR": 0
@@ -174,7 +174,7 @@
     "imageCode": 23,
     "delay": 783,
     "correct": true,
-    "avgHR": 73.65,
+    "avgHR": 71.07,
     "avgTemperature": 35.43,
     "rmsEDA": 0.013808115536403463,
     "stdHR": 0

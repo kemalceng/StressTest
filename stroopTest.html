@@ -317,6 +317,10 @@
             durationsData.push({x:i, y:diff});
 
             if(count === 0 || count === incrementHrIndexOnEdaCount) {
+              // Fix for init time difference between HR data and EDA data
+              if(h < 0) {
+                h = 0;
+              }
               hrDataInInterval.push( hrData[h+2])
             }
 
@@ -742,7 +746,7 @@
 
       function onAccClick(e){
         edaInitIndex = Math.ceil(e.dataPoint.x / (accFrequency / edaFrequency));
-        hrInitIndex = Math.ceil(e.dataPoint.x / (accFrequency / hrFrequency));
+        hrInitIndex = Math.ceil(e.dataPoint.x / (accFrequency / hrFrequency) - ((hrInitTime - edaInitTime) / hrFrequency));
         temperatureInitIndex = Math.ceil(e.dataPoint.x / (accFrequency / temperatureFrequency));
         var timeOfPoint = accInitTime + (e.dataPoint.x * accIncrement);
 

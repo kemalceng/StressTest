@@ -3,71 +3,71 @@
     "imageCode": 34,
     "delay": 2093,
     "correct": true,
-    "avgHR": 65.52000000000001,
-    "avgTemperature": 37.129999999999995,
-    "rmsEDA": 0.12620090695840896,
-    "stdHR": 0.03999999999999915
+    "avgHR": 61.97,
+    "avgTemperature": 37.09,
+    "rmsEDA": 0.12508306564889188,
+    "stdHR": 0.3000000000000007
   },
   {
     "imageCode": 32,
     "delay": 1511,
     "correct": true,
-    "avgHR": 65.58500000000001,
-    "avgTemperature": 37.129999999999995,
-    "rmsEDA": 0.12998190655241212,
-    "stdHR": 0.02499999999999858
+    "avgHR": 62.525000000000006,
+    "avgTemperature": 37.11,
+    "rmsEDA": 0.13218119035752907,
+    "stdHR": 0.254999999999999
   },
   {
     "imageCode": 43,
     "delay": 1616,
     "correct": true,
-    "avgHR": 65.6,
+    "avgHR": 62.95,
     "avgTemperature": 37.129999999999995,
-    "rmsEDA": 0.11787724941104745,
-    "stdHR": 0.00999999999999801
+    "rmsEDA": 0.11998352297652017,
+    "stdHR": 0.16999999999999815
   },
   {
     "imageCode": 41,
     "delay": 1880,
     "correct": true,
-    "avgHR": 65.58,
+    "avgHR": 63.28,
     "avgTemperature": 37.129999999999995,
-    "rmsEDA": 0.1164898067784719,
-    "stdHR": 0.010000000000005116
+    "rmsEDA": 0.11662932321063786,
+    "stdHR": 0.16000000000000014
   },
   {
     "imageCode": 11,
     "delay": 1048,
     "correct": true,
-    "avgHR": 65.57,
-    "avgTemperature": 37.11,
-    "rmsEDA": 0.11604973596480089,
+    "avgHR": 63.44,
+    "avgTemperature": 37.129999999999995,
+    "rmsEDA": 0.11724548870852133,
     "stdHR": 0
   },
   {
     "imageCode": 12,
     "delay": 944,
     "correct": true,
-    "avgHR": 65.64,
-    "avgTemperature": 37.11,
-    "rmsEDA": 0.11291405328168855,
+    "avgHR": 63.85,
+    "avgTemperature": 37.129999999999995,
+    "rmsEDA": 0.11388288924482906,
     "stdHR": 0
   },
   {
     "imageCode": 23,
     "delay": 1304,
     "correct": true,
-    "avgHR": 65.745,
-    "avgTemperature": 37.09,
-    "rmsEDA": 0.11426077193245282,
-    "stdHR": 0.045000000000001705
+    "avgHR": 64.395,
+    "avgTemperature": 37.11,
+    "rmsEDA": 0.11387785408146749,
+    "stdHR": 0.17499999999999716
   },
   {
     "imageCode": 24,
     "delay": 672,
     "correct": true,
-    "avgHR": 65.79,
-    "avgTemperature": 37.07,
+    "avgHR": 64.57,
+    "avgTemperature": 37.11,
     "rmsEDA": 0.11355490741487133,
     "stdHR": 0
   },
@@ -75,108 +75,108 @@
     "imageCode": 23,
     "delay": 768,
     "correct": true,
-    "avgHR": 65.79,
-    "avgTemperature": 37.07,
-    "rmsEDA": 0.11355490741487133,
+    "avgHR": 64.57,
+    "avgTemperature": 37.09,
+    "rmsEDA": 0.113875,
     "stdHR": 0
   },
   {
     "imageCode": 34,
     "delay": 664,
     "correct": true,
-    "avgHR": 65.79,
+    "avgHR": 64.57,
     "avgTemperature": 37.07,
-    "rmsEDA": 0.11549092788324689,
+    "rmsEDA": 0.11355490741487133,
     "stdHR": 0
   },
   {
     "imageCode": 41,
     "delay": 719,
     "correct": true,
-    "avgHR": 65.79,
+    "avgHR": 64.57,
     "avgTemperature": 37.07,
-    "rmsEDA": 0.11547989228865777,
+    "rmsEDA": 0.11612721134600623,
     "stdHR": 0
   },
   {
     "imageCode": 11,
     "delay": 688,
     "correct": true,
-    "avgHR": 65.79,
-    "avgTemperature": 37.05,
-    "rmsEDA": 0.11724548870852132,
+    "avgHR": 64.57,
+    "avgTemperature": 37.07,
+    "rmsEDA": 0.11531950522136314,
     "stdHR": 0
   },
   {
     "imageCode": 43,
     "delay": 2808,
     "correct": true,
-    "avgHR": 65.74000000000001,
-    "avgTemperature": 37.05,
-    "rmsEDA": 0.11273551901168209,
-    "stdHR": 0.05000000000000426
+    "avgHR": 64.75,
+    "avgTemperature": 37.07,
+    "rmsEDA": 0.11479127571300088,
+    "stdHR": 0.18000000000000682
   },
   {
     "imageCode": 34,
     "delay": 1376,
     "correct": true,
-    "avgHR": 65.645,
+    "avgHR": 65.08000000000001,
     "avgTemperature": 37.05,
-    "rmsEDA": 0.10869328186231199,
-    "stdHR": 0.045000000000001705
+    "rmsEDA": 0.10778192090049239,
+    "stdHR": 0.14999999999999858
   },
   {
     "imageCode": 41,
     "delay": 1839,
     "correct": true,
-    "avgHR": 65.555,
-    "avgTemperature": 37.010000000000005,
-    "rmsEDA": 0.115989450653928,
-    "stdHR": 0.0449999999999946
+    "avgHR": 65.355,
+    "avgTemperature": 37.05,
+    "rmsEDA": 0.11558541101280906,
+    "stdHR": 0.125
   },
   {
     "imageCode": 43,
     "delay": 1423,
     "correct": true,
-    "avgHR": 65.47,
-    "avgTemperature": 37.010000000000005,
-    "rmsEDA": 0.1030025102533914,
+    "avgHR": 65.52000000000001,
+    "avgTemperature": 37.05,
+    "rmsEDA": 0.10706138755483541,
     "stdHR": 0.03999999999999915
   },
   {
     "imageCode": 11,
     "delay": 783,
     "correct": true,
-    "avgHR": 65.43,
-    "avgTemperature": 37.03,
-    "rmsEDA": 0.0968721071963786,
+    "avgHR": 65.56,
+    "avgTemperature": 37.010000000000005,
+    "rmsEDA": 0.09943510883988611,
     "stdHR": 0
   },
   {
     "imageCode": 43,
     "delay": 919,
     "correct": true,
-    "avgHR": 65.43,
-    "avgTemperature": 37.03,
-    "rmsEDA": 0.09462290046812134,
+    "avgHR": 65.56,
+    "avgTemperature": 37.010000000000005,
+    "rmsEDA": 0.09582265731417595,
     "stdHR": 0
   },
   {
     "imageCode": 11,
     "delay": 911,
     "correct": true,
-    "avgHR": 65.35,
-    "avgTemperature": 37.010000000000005,
-    "rmsEDA": 0.09079202851297023,
+    "avgHR": 65.61,
+    "avgTemperature": 37.03,
+    "rmsEDA": 0.09317723235318809,
     "stdHR": 0
   },
   {
     "imageCode": 23,
     "delay": 967,
     "correct": true,
-    "avgHR": 65.27,
+    "avgHR": 65.59,
     "avgTemperature": 37.03,
-    "rmsEDA": 0.086915,
+    "rmsEDA": 0.08820717757076235,
     "stdHR": 0
   }
 ]
