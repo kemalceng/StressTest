@@ -1,88 +1,96 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset='utf-8'>
-  	<style>
-	  td {
-	    text-align: center;
-	  }
-	  tr{
-	  	height: 20px;
-	  }
+
+<head>
+	<meta charset='utf-8'>
+	<style>
+		td {
+			text-align: center;
+		}
+
+		tr {
+			height: 20px;
+		}
 	</style>
-  </head>
-  <body>
-    <div align="center">
-      <div style="background-image: url('resources/images/flag_tr.png'); width: 32px; height: 32px; background-size: cover; display:inline-block;" onclick="setLang('tr')"></div>
-      <div style="background-image: url('resources/images/flag_uk.png'); width: 32px; height: 32px; background-size: cover; display:inline-block;" onclick="setLang('en')"></div>
-      <table>
-    	<tr>
-    		<td id="age">
-    			Yaş
-    		</td>
-    		<td>
-    			<input type="number" name="age" id="userAge" min="1" max="100" value="25"/>
-    		</td>
-    	</tr>
-    	<tr>
-       		<td id="sex">
-    			Cinsiyet
-    		</td>
-    		<td>
-				<input type="radio" name="gender" id="genderMale" value="male" checked/> <span id="male"> Erkek</span> <br>
-    		</td>
-    		<td>
-				<input type="radio" name="gender" value="female"/> <span id="female"> Kadın</span> <br>
-    		</td>
-    	</tr>
-    	<tr/>
-      </table>
+</head>
 
-      <table>
-    	<tr>
-    		<td>
-		      <a id="imageTestLink" href="imageTest.html" onclick="setUserInfo()">
-		  	    <img src="resources/images/imageTest.jpg" alt="Image Test" style="width:200px;height:200px;border:0">
-		      </a>
-		    </td>
-		    <td>
-  			  <a id="stroopTestLink" href="stroopTest.html" onclick="setUserInfo()">
-		  	    <img src="resources/images/stroopTest.jpg" alt="Stroop Test" style="width:200px;height:200px;border:0">
-		      </a>
-		    </td>
-        <td>
-          <a id="countdownTestLink" href="countdownTest.html" onclick="setUserInfo()">
-            <img src="resources/images/countdown.jpg" alt="Countdown Test" style="width:200px;height:200px;border:0">
-          </a>
-        </td>
-	    </tr>
-	    <tr>
-	    	<td id="image_test">
-	    		Resim Testi
-	    	</td>
-	    	<td id="stroop_test">
-	    		Stroop Testi
-	    	</td>
-        <td id="countdown_test">
-          Geri Sayım Testi
-        </td>
-	    </tr>
-	  </table>
-    </div>
+<body>
+	<div align="center">
+		<div
+			style="background-image: url('resources/images/flag_tr.png'); width: 32px; height: 32px; background-size: cover; display:inline-block;"
+			onclick="setLang('tr')"></div>
+		<div
+			style="background-image: url('resources/images/flag_uk.png'); width: 32px; height: 32px; background-size: cover; display:inline-block;"
+			onclick="setLang('en')"></div>
+		<table>
+			<tr>
+				<td id="age">
+					Yaş
+				</td>
+				<td>
+					<input type="number" name="age" id="userAge" min="1" max="100" value="25" />
+				</td>
+			</tr>
+			<tr>
+				<td id="sex">
+					Cinsiyet
+				</td>
+				<td>
+					<input type="radio" name="gender" id="genderMale" value="male" checked /> <span id="male"> Erkek</span> <br>
+				</td>
+				<td>
+					<input type="radio" name="gender" value="female" /> <span id="female"> Kadın</span> <br>
+				</td>
+			</tr>
+			<tr />
+		</table>
+
+		<table>
+			<tr>
+				<td>
+					<a id="imageTestLink" href="imageTest.html" onclick="setUserInfo()">
+						<img src="resources/images/imageTest.jpg" alt="Image Test" style="width:200px;height:200px;border:0">
+					</a>
+				</td>
+				<td>
+					<a id="stroopTestLink" href="stroopTest.html" onclick="setUserInfo()">
+						<img src="resources/images/stroopTest.jpg" alt="Stroop Test" style="width:200px;height:200px;border:0">
+					</a>
+				</td>
+				<td>
+					<a id="countdownTestLink" href="countdownTest.html" onclick="setUserInfo()">
+						<img src="resources/images/countdown.jpg" alt="Countdown Test" style="width:200px;height:200px;border:0">
+					</a>
+				</td>
+			</tr>
+			<tr>
+				<td id="image_test">
+					Resim Testi
+				</td>
+				<td id="stroop_test">
+					Stroop Testi
+				</td>
+				<td id="countdown_test">
+					Geri Sayım Testi
+				</td>
+			</tr>
+		</table>
+	</div>
 
 
-    <!--Perform translation -->
-    <script type="text/javascript" src="translate.js"></script>
+	<!--Perform translation -->
+	<script type="text/javascript" src="resources/js/translate.js"></script>
 
 
-    <script type="text/javascript">
-    	function setUserInfo() {
-  			var age = document.getElementById("userAge").value;
-      		localStorage.setItem("userAge", age);
+	<script type="text/javascript">
+		function setUserInfo() {
+			var age = document.getElementById("userAge").value;
+			localStorage.setItem("userAge", age);
 
-  			var gender = (document.getElementById("genderMale").checked) ? "M" : "F";
-      		localStorage.setItem("userGender", gender);
-    	}
-    </script>
-  </body>
+			var gender = (document.getElementById("genderMale").checked) ? "M" : "F";
+			localStorage.setItem("userGender", gender);
+		}
+	</script>
+</body>
+
 </html>

@@ -1,0 +1,48 @@
+{
+  "name": "stresstest",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "clean": "rm -rf build && mkdir build",
+    "build-babel": "babel -d ./build ./src index.js index.html ./resources -s --copy-files",
+    "build": "npm run clean && npm run build-babel",
+    "test": "test",
+    "dev": "nodemon build/index.js --exec babel-node",
+    "start": "npm run build && node build/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kemalceng/StressTest.git"
+  },
+  "keywords": [
+    "stress",
+    "test",
+    "stroop",
+    "eda"
+  ],
+  "author": "Kemal Beskardesler",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kemalceng/StressTest/issues"
+  },
+  "homepage": "https://github.com/kemalceng/StressTest#readme",
+  "dependencies": {
+    "@babel/polyfill": "^7.4.3",
+    "@babel/runtime": "^7.4.3",
+    "body-parser": "^1.18.3",
+    "express": "^4.16.4",
+    "socket.io": "^2.2.0",
+    "dropbox": "^4.0.17",
+    "isomorphic-fetch": "^2.2.1",
+    "uuid": "^3.3.2"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.2.3",
+    "@babel/core": "^7.4.0",
+    "@babel/node": "^7.2.2",
+    "@babel/plugin-transform-runtime": "^7.4.3",
+    "@babel/preset-env": "^7.4.2",
+    "nodemon": "^1.18.10"
+  }
+}
