@@ -1,5 +1,7 @@
 import routes from './api/routes';
 import express from 'express';
+import path from 'path';
+
 import { urlencoded, json } from 'body-parser';
 
 export let analysisDataCache = {};
@@ -13,8 +15,8 @@ var io = require('socket.io')(http);
 app.use(urlencoded({ extended: true }));
 app.use(json());
 
-app.use('/resources', express.static('resources'))
-app.use(express.static('tests'))
+app.use('/tests', express.static(path.join(__dirname, '/tests')));
+app.use('/resources', express.static(path.join(__dirname, '/resources')));
 
 routes(app);
 

@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "clean": "rm -rf build && mkdir build",
-    "build-babel": "babel -d ./build ./src index.js index.html ./resources -s --copy-files",
+    "build-babel": "babel -d ./build ./src -s --copy-files",
     "build": "npm run clean && npm run build-babel",
     "test": "test",
     "dev": "nodemon build/index.js --exec babel-node",

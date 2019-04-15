@@ -2,8 +2,8 @@
 <html>
 
 <head>
-  <script src="resources/js/canvasjs.min.js"></script>
-  <script src="resources/js/jquery-2.2.3.js"></script>
+  <script src="../resources/js/canvasjs.min.js"></script>
+  <script src="../resources/js/jquery-2.2.3.js"></script>
   <meta charset='utf-8'>
   <style>
     td {
@@ -27,7 +27,7 @@
     <div id="alert"></div>
   </div>
   <div>
-    <img id="testImage" src="resources/images/StroopTesti.png" style="width:800px;height:600px" />
+    <img id="testImage" src="../resources/images/StroopTesti.png" style="width:800px;height:600px" />
   </div>
   <div id="selectionBar" style="display:none">
     <table>
@@ -73,7 +73,7 @@
   </div>
 
   <!--Perform translation -->
-  <script type="text/javascript" src="resources/js/translate.js"></script>
+  <script type="text/javascript" src="../resources/js/translate.js"></script>
 
   <!--Contains stroopImageSequence variable and answers-->
   <script type="text/javascript" src="stroopImageSequence.js"></script>
@@ -199,7 +199,7 @@
         localStorage.setItem("stroopImagesShownTime", null);
 
       } else {
-        image.src = "resources/images/Sorry.jpg";
+        image.src = "../resources/images/Sorry.jpg";
         stopTest(true);
       }
     }
@@ -254,10 +254,10 @@
       document.getElementById("selectionBar").style.display = "none";
 
       if (isStoppedManually) {
-        image.src = "resources/images/StroopTesti.png";
+        image.src = "../resources/images/StroopTesti.png";
         initLocalStorage();
       } else {
-        image.src = "resources/images/TestFinished.png";
+        image.src = "../resources/images/TestFinished.png";
         // Update local storage
         var strImagesShownTime = JSON.stringify(imagesShownTimeList);
         localStorage.setItem("stroopImagesShownTime", strImagesShownTime);
@@ -782,7 +782,7 @@
           }
         }
       } else {
-        image.src = "resources/images/imageNotFound.png";
+        image.src = "../resources/images/imageNotFound.png";
       }
     }
 
