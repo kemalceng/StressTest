@@ -2,8 +2,8 @@
 <html>
 
 <head>
-  <script src="../resources/js/canvasjs.min.js"></script>
-  <script src="../resources/js/jquery-2.2.3.js"></script>
+  <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+  <script src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
   <meta charset='utf-8'>
   <title>Resim Testi</title>
 </head>
@@ -19,8 +19,9 @@
   });
   socket.on('disconnect', function () { });
 
-  socket.on('start-image-test', function () {
-    console.log("Starting test!");
+  socket.on('start-image-test', function (fileId) {
+    console.log("Starting test! File Id:", fileId);
+    document.getElementById("dropboxFile").value = fileId;
     startTimer();
   });
 
@@ -33,6 +34,7 @@
     <button id="btnStop" onclick="stopTimer(1)" disabled=true>Durdur</button>
     <output id="selectedFile"></output>
     <output id="wsId"></output>
+    <input id="dropboxFile"></input>
   </div>
   <div>
     <div id="alert"></div>
@@ -56,6 +58,7 @@
 
   <div>
     <span id="eda_File">EDA Dosyası :</span><input id="edaFile" type="file" name="edaFile" />
+    <button id="btnDropbox" onclick="loadFromDropbox()">Dropbox</button>
     <span id="acc_File">ACC Dosyası :</span><input id="accFile" type="file" name="accFile" />
     <span id="record_File">Kayıt Dosyası :</span><input id="recordFile" type="file" name="recordFile" />
   </div>
@@ -74,7 +77,8 @@
   <script type="text/javascript" src="../resources/js/translate.js"></script>
 
   <!--Contains imageSequence variable-->
-  <script type="text/javascript" src="imageSequence.js"></script>
+  <script type="text/javascript" src="imageSequence_v1.js"></script>
+
   <script type="text/javascript">
     window.addEventListener('load', init, false);
     window.addEventListener('keydown', this.keyPress, false);
@@ -106,6 +110,7 @@
     var noiseInterval = 3000;
     var adjustTimeModeOn = false;
     var categoryShift = 0;
+    var usingSyncRecord = false;
 
     var image = document.getElementById("testImage");
 
@@ -196,6 +201,32 @@
         // returns a URL you can use as a href
         return textFile;
       };
+
+    function httpGetAsync(theUrl, callback) {
+      var xmlHttp = new XMLHttpRequest();
+      xmlHttp.onreadystatechange = function () {
+        if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+          callback(xmlHttp.responseText);
+      }
+      xmlHttp.open("GET", theUrl, true); // true for asynchronous 
+      xmlHttp.send(null);
+    }
+
+    function loadFromDropbox() {
+      var fileRef = document.getElementById("dropboxFile").value;
+      if (fileRef) {
+        usingSyncRecord = true;
+
+        httpGetAsync(`/records/${fileRef}`, function (response) {
+          var splitted = response.split(/\r\n|\n/);
+
+          edaInitTime = parseFloat(splitted[0]);
+          edaFrequency = parseFloat(splitted[1]);
+
+          drawEdaGraphics(splitted, edaInitTime, edaFrequency, "edaChartContainer");
+        });
+      }
+    }
 
     function stopTimer(isStoppedManually) {
       if (imageTimer != null || restTimer != null) {
@@ -317,8 +348,9 @@
     }
 
     function handleEdaFileSelection(evt) {
-      var files = evt.target.files;
+      usingSyncRecord = false;
 
+      var files = evt.target.files;
       var output = [];
       for (var i = 0, f; f = files[i]; i++) {
         output.push('<li><strong>', f.name, '</strong> (', f.type || 'n/a', ') - ',
@@ -339,7 +371,6 @@
         })(f);
 
         r.readAsText(f);
-
       }
       document.getElementById('selectedFile').innerHTML = '<ul>' + output.join('') + '</ul>';
     }
@@ -378,14 +409,15 @@
     var photoTypeDataPoints = [];
     var graphData = [];
     var currentEdaChart;
+    var pointsInInterval;
 
     function drawEdaGraphics(splitted, initTime, frequency, chartSelection) {
       var contentsAsDataPoint = [];
       // Increment in ms
       increment = (1 / frequency);
       var interval = document.getElementById('interval').value;
-      var pointsInInterval = frequency * (interval / 1000);
-      console.log('Freq: ' + frequency + ',  PointsForOneImage' + pointsInInterval);
+      pointsInInterval = frequency * (interval / 1000);
+      console.log('Freq: ' + frequency + ',  PointsForOneImage: ' + pointsInInterval);
 
       for (var i = 2, time = initTime; i < splitted.length; i++ , time += increment) {
         //contentsAsDataPoint.push({ x: time,  y: parseFloat(splitted[i]) } );
@@ -541,7 +573,11 @@
 
     function onClick(e) {
       var timeOfPoint = edaInitTime + (e.dataPoint.x * increment);
-      setImageAtTime(timeOfPoint);
+      if (usingSyncRecord) {
+        setImageAtIndex(e.dataPoint.x);
+      } else {
+        setImageAtTime(timeOfPoint);
+      }
     }
 
     function onAccClick(e) {
@@ -571,6 +607,17 @@
         }
       }
       currentEdaChart.render();
+    }
+
+    function setImageAtIndex(index) {
+      console.log("setImageAtIndex:" + index, "pointsInInterval: " + pointsInInterval);
+
+      var imageIndex = Math.floor(index / pointsInInterval);
+      if (imageIndex >= imageSequence.length) {
+        image.src = "../resources/images/imageNotFound.png";
+      } else {
+        image.src = JSON.stringify(imageSequence[imageIndex]).split('"').join('');
+      }
     }
 
     function setImageAtTime(timeOfPoint) {

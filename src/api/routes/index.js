@@ -1,4 +1,4 @@
-import { createAnalysis, updateAnalysis, stopAnalysis } from '../controllers';
+import { createAnalysis, getAnalysis, updateAnalysis, stopAnalysis } from '../controllers';
 
 export default function (app) {
   app.route('/records')
@@ -6,6 +6,9 @@ export default function (app) {
 
   app.route('/records/:recordId')
     .put(updateAnalysis);
+
+  app.route('/records/:recordId')
+    .get(getAnalysis);
 
   app.route('/records/:recordId/stop')
     .put(stopAnalysis);

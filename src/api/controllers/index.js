@@ -26,6 +26,17 @@ export const createAnalysis = (req, res) => {
   });
 };
 
+export const getAnalysis = (req, res, next) => {
+  const id = req.params.recordId;
+
+  downloadFile(id)
+    .then((response) => {
+      res.send(Buffer.from(response.fileBinary))
+    })
+    .catch(err => next(err));
+}
+
+
 export const updateAnalysis = (req, res) => {
   const id = req.params.recordId;
   const samples = req.body;
@@ -68,6 +79,18 @@ export const stopAnalysis = (req, res, next) => {
     next(null);
   }
 }
+
+async function downloadFile(id) {
+  const path = `/${id}.txt`;
+  const response = await dbx.filesDownload({
+    path
+  });
+
+  console.log("Download completed: ", path);
+
+  return response;
+}
+
 
 async function uploadFile(id, contents) {
   const path = `/${id}.txt`;
