@@ -10,6 +10,9 @@ var dictionary = {
   word: { tr: "Kelime", en: "Word"},
   btnStart: { tr: "Teste Başla", en: "Start Test"},
   btnStop: { tr: "Durdur", en: "Stop"},
+  lblInterval: { tr: "Aralık", en: "Interval: "},
+  lblCount: { tr: "Adet", en: "Count: "},
+  lblClientId: { tr: "Kullanıcı ID: ", en: "Client ID: "},
   eda_File: { tr: "EDA Dosyası :", en: "EDA File :"},
   acc_File: { tr: "ACC Dosyası :", en: "ACC File :"},
   record_File: { tr: "Kayıt Dosyası :", en: "Record File :"},
@@ -42,13 +45,13 @@ if(langParam && (langParam == 'tr' || langParam == 'en')) {
 
   //Set test links
   var imageTestLinkElement = document.getElementById("imageTestLink");
-  imageTestLinkElement && (imageTestLinkElement.href = "imageTest.html" + "?lang=" + langParam);
+  imageTestLinkElement && (imageTestLinkElement.href = "tests/imageTest.html" + "?lang=" + langParam);
 
   var stroopTestLinkElement = document.getElementById("stroopTestLink");
-  stroopTestLinkElement && (stroopTestLinkElement.href = "stroopTest.html" + "?lang=" + langParam);
+  stroopTestLinkElement && (stroopTestLinkElement.href = "tests/stroopTest.html" + "?lang=" + langParam);
 
   var countdownTestLinkElement = document.getElementById("countdownTestLink");
-  countdownTestLinkElement && (countdownTestLinkElement.href = "countdownTest.html" + "?lang=" + langParam);
+  countdownTestLinkElement && (countdownTestLinkElement.href = "tests/countdownTest.html" + "?lang=" + langParam);
 }
 
 function setLang(lang) {

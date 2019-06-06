@@ -4,6 +4,8 @@ var Dropbox = require('dropbox').Dropbox;
 
 import { analysisDataCache } from '../../index';
 
+import { listImages } from '../../images';
+
 const accessToken = process.env.DROPBOX_ACCESS_TOKEN;
 
 var dbx = new Dropbox({ accessToken, fetch });
@@ -78,6 +80,10 @@ export const stopAnalysis = (req, res, next) => {
   } else {
     next(null);
   }
+}
+
+export const listImagePaths = (req, res) => {
+   res.json(listImages());
 }
 
 async function downloadFile(id) {

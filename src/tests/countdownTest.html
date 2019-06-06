@@ -2,8 +2,8 @@
 <html>
 
 <head>
-  <script src="resources/js/canvasjs.min.js"></script>
-  <script src="resources/js/jquery-2.2.3.js"></script>
+  <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.3/jquery.min.js"></script>
   <meta charset='utf-8'>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
@@ -11,7 +11,7 @@
   <meta id="theme-color" name="theme-color" content="#fff">
   <base target="_blank">
   <title>Geri Sayım Testi</title>
-  <link rel="stylesheet" href="resources/css/mystyle.css">
+  <link rel="stylesheet" href="../resources/css/mystyle.css">
   <style>
     a#downloadLink {
       display: block;
@@ -70,21 +70,21 @@
     <!-- Audio Controls-->
     <div>
       <audio id="warningAudio" controls hidden>
-        <source src="resources/sounds/warning.mp3" type="audio/mpeg">
+        <source src="../resources/sounds/warning.mp3" type="audio/mpeg">
         Your browser does not support the audio tag.
       </audio>
       <audio id="noiseAudio" controls hidden>
-        <source src="resources/sounds/chirp.mp3" type="audio/mpeg">
+        <source src="../resources/sounds/chirp.mp3" type="audio/mpeg">
         Your browser does not support the audio tag.
       </audio>
     </div>
 
     <!-- Directions View-->
     <div id="directionsView">
-      <img id="testImage" src="resources/images/GeriSayimTesti.png" style="width:800px;height:600px" />
+      <img id="testImage" src="../resources/images/GeriSayimTesti.png" style="width:800px;height:600px" />
     </div>
 
-    <div id="container">
+    <div>
       <p id="substractTest" style="display: none">200 - 17 = ?</p>
       <p id="wordTest" style="display: none">Makas --- S____?</p>
       <p id="multiplyTest" style="display: none">40 * 60 = ?</p>
@@ -129,7 +129,7 @@
   </div>
 
   <!--Perform translation -->
-  <script type="text/javascript" src="resources/js/translate.js"></script>
+  <script type="text/javascript" src="../resources/js/translate.js"></script>
 
   <script src="recorder.js"></script>
 
@@ -162,14 +162,12 @@
     var edaFrequency, accFrequency;
     var increment, accIncrement;
     var testStartDate = 0;
-    var testInterval = 45000; //45sec
-    var restInterval = 90000; //90sec
-    var answerSubstractInterval = 5000;
-    var answerMultiplyInterval = 9000;
+    var testInterval = 1000; //45sec
+    var restInterval = 1000; //90sec
+    var answerSubstractInterval = 1000;
+    var answerMultiplyInterval = 1000;
     var noiseInterval = 3000;
-    var adjustTimeModeOn = false;
-
-    var video = document.getElementById("videoElement");
+    var isAdjustTimeModeOn = false;
 
     var image = document.getElementById("testImage");
 
@@ -178,7 +176,7 @@
         // Clear local storage
         localStorage.setItem("imagesShownTime", null);
       } else {
-        image.src = "resources/images/Sorry.jpg";
+        image.src = "../resources/images/Sorry.jpg";
         stopTimer(true);
       }
     }
@@ -186,7 +184,7 @@
     function startRestTimer() {
       if (restTimer == null) {
 
-        image.src = "resources/images/rest.jpg";
+        image.src = "../resources/images/rest.jpg";
 
         restTimer = setInterval(haveRest, restInterval);
 
@@ -266,7 +264,7 @@
         document.getElementById("btnStop").disabled = true;
 
         if (isStoppedManually) {
-          image.src = "resources/images/GeriSayimTesti.png";
+          image.src = "../resources/images/GeriSayimTesti.png";
           initLocalStorage();
         } else {
           var link = document.getElementById('downloadLink');
@@ -337,7 +335,7 @@
 
       if (testNumber >= numberOfTests) {
         stopTimer(false);
-        image.src = "resources/images/TestFinished.png";
+        image.src = "../resources/images/TestFinished.png";
         return;
       }
 

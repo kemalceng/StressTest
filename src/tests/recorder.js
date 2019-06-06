@@ -62,7 +62,7 @@ function startRecording(stream) {
 	mediaRecorder.start(10);
 
 	var url = window.URL || window.webkitURL;
-	videoElement.src = url ? url.createObjectURL(stream) : stream;
+	videoElement.srcObject = stream;
 	videoElement.play();
 
 	mediaRecorder.ondataavailable = function(e) {
@@ -93,13 +93,19 @@ function startRecording(stream) {
 		var videoURL = window.URL.createObjectURL(blob);
 
 		downloadLink.href = videoURL;
+		videoElement.srcObject = null;
+
 		videoElement.src = videoURL;
+
 		// downloadLink.innerHTML = 'Download video file';
 
 		var name  = testStartDate + "_video" +".webm" ;
 
 		downloadLink.setAttribute( "download", name);
 		downloadLink.setAttribute( "name", name);
+		
+		mediaRecorder.stream.getTracks() // get all tracks from the MediaStream
+			.forEach( track => track.stop() ); // stop each of them
 	};
 
 	mediaRecorder.onpause = function(){

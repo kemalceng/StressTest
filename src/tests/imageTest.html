@@ -14,7 +14,7 @@
   socket.on('connect', function () {
     console.log("Websocket Connected, id: ", socket.id);
 
-    document.getElementById("wsId").innerHTML = "Client ID: " + socket.id.substr(0, 4).toLowerCase();
+    document.getElementById("wsId").innerHTML = socket.id.substr(0, 4).toLowerCase();
 
   });
   socket.on('disconnect', function () { });
@@ -29,12 +29,13 @@
 
 <body>
   <div>
-    <input id="interval" type="number">ms</input>
+    <span id="lblInterval">Aralık: </span><input id="interval" type="number" style="width: 50px">ms</input>
+    <span id="lblCount">Adet: </span><input id="imageCount" type="number" style="width: 50px" onchange="onImageCountChanged()"/>
     <button id="btnStart" onclick="startTimer()">Teste başla</button>
     <button id="btnStop" onclick="stopTimer(1)" disabled=true>Durdur</button>
     <output id="selectedFile"></output>
-    <output id="wsId"></output>
-    <input id="dropboxFile"></input>
+    <span id="lblClientId">Kullanıcı ID: </span><output id="wsId"></output>
+    Dropbox ID:<input id="dropboxFile"/>
   </div>
   <div>
     <div id="alert"></div>
@@ -76,9 +77,6 @@
   <!--Perform translation -->
   <script type="text/javascript" src="../resources/js/translate.js"></script>
 
-  <!--Contains imageSequence variable-->
-  <script type="text/javascript" src="imageSequence_v1.js"></script>
-
   <script type="text/javascript">
     window.addEventListener('load', init, false);
     window.addEventListener('keydown', this.keyPress, false);
@@ -96,8 +94,9 @@
         case 189: adjustmentInMs -= deltaInMs; console.log("Adjustment: " + adjustmentInMs); break;
       }
     }
+    var imageSequence = [];
     var imageIndex = 0;
-    var numberOfImages = imageSequence.length;
+    var numberOfImages = 50;
     var imageTimer = null;
     var restTimer = null;
     var noiseTimer = null;
@@ -108,18 +107,45 @@
     var testStartDate = 0;
     var interval = 1000;
     var noiseInterval = 3000;
-    var adjustTimeModeOn = false;
+    var isAdjustTimeModeOn = false;
     var categoryShift = 0;
     var usingSyncRecord = false;
 
     var image = document.getElementById("testImage");
 
-    function loadImages(fs) {
+    function loadImages() {
       var allImages = [];
       for (i = 0; i < imageSequence.length; i++) {
         allImages[i] = new Image();
         allImages[i].src = imageSequence[i];
       }
+    }
+
+    function getImages() {
+      return $.getJSON('/images');
+    }
+
+    async function generateImageSequence() {
+      var generatedImageSequence = [];
+
+      const images = await getImages();
+
+      var allImagesCount = images.length;
+
+      for (var i = 0; i < numberOfImages; i++) {
+        var randomImageIndex = Math.floor(Math.random() * allImagesCount);
+        generatedImageSequence.push(images[randomImageIndex]);
+      }
+
+      return generatedImageSequence;
+    }
+
+    function onImageCountChanged() {
+      numberOfImages = document.getElementById("imageCount").value;
+      generateImageSequence().then(value => {
+        imageSequence = value;
+        loadImages();
+      });
     }
 
     function initLocalStorage() {
@@ -284,9 +310,15 @@
     function init() {
       initLocalStorage();
       checkForFileApiSupport();
-      loadImages();
+
+      document.getElementById("imageCount").value = numberOfImages;
+      generateImageSequence().then(value => {
+        imageSequence = value;
+        loadImages();
+      });
 
       document.getElementById("interval").value = interval;
+
       document.getElementById('edaFile').addEventListener('change', handleEdaFileSelection, false);
       document.getElementById('accFile').addEventListener('change', handleAccFileSelection, false);
       document.getElementById('recordFile').addEventListener('change', handleRecordFileSelection, false);
