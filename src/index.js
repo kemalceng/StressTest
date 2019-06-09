@@ -39,7 +39,7 @@ app.post('/start-test', function (req, res, next) {
   console.log(`Start ${testType} test for client ${wsId}`);
 
   if (wsId && wsMap[wsId]) {
-    io.to(wsMap[wsId]).emit('start-image-test', fileId)
+    io.to(wsMap[wsId]).emit('start-test', fileId)
     res.json({ 'message': 'Starting test...' });
   } else {
     res.status(400).json({ 'message': 'Invalid client' });

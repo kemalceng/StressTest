@@ -29,7 +29,9 @@ export const createAnalysis = (req, res) => {
 };
 
 export const listAnalyses = (req, res, next) => {
-  listFolders()
+  const test = req.params.test;
+
+  listFolders(test)
       .then((folders) => {
         res.send(folders)
       })
@@ -41,6 +43,7 @@ export const listAnalyses = (req, res, next) => {
 
 export const getAnalysis = (req, res, next) => {
   const id = req.params.recordId;
+  const test = req.params.test;
 
   let filename = 'eda.txt';
 
@@ -50,7 +53,7 @@ export const getAnalysis = (req, res, next) => {
     filename = 'metadata.json';
   }
 
-  downloadFile(id, filename)
+  downloadFile(test, id, filename)
     .then((response) => {
       res.send(Buffer.from(response.fileBinary))
     })
@@ -59,9 +62,10 @@ export const getAnalysis = (req, res, next) => {
 
 export const uploadMetadataFile = (req, res, next) => {
   const id = req.params.recordId;
+  const test = req.params.test;
   const fileContent = req.body;
 
-  uploadFile(id, 'metadata.json', JSON.stringify(fileContent))
+  uploadFile(test, id, 'metadata.json', JSON.stringify(fileContent))
       .then(() => res.send(null))
       .catch(err => {
         console.error(err);
@@ -80,6 +84,7 @@ export const updateAnalysis = (req, res) => {
 
 export const stopAnalysis = (req, res, next) => {
   const id = req.params.recordId;
+  const test = req.params.test;
 
   if (analysisDataCache && analysisDataCache[id] && analysisDataCache[id].data.length) {
     const { frequency } = analysisDataCache[id];
@@ -107,8 +112,8 @@ export const stopAnalysis = (req, res, next) => {
     const ecgContents = startTime + '\n' + frequency + analogChannel1Data;
 
     Promise.all([
-        uploadFile(id, 'eda.txt', edaContents),
-        uploadFile(id, 'ecg.txt', ecgContents)
+        uploadFile(test, id, 'eda.txt', edaContents),
+        uploadFile(test, id, 'ecg.txt', ecgContents)
     ]).then(() => {
       return res.json({ 'message': 'EDA and ECG files are successfully saved!' });
     }).catch(err => {
@@ -129,8 +134,8 @@ export const listStroopImagePaths = (req, res) => {
   res.json(listStroopImages());
 }
 
-async function downloadFile(id, filename) {
-  const path = `/${id}/${filename}`;
+async function downloadFile(test, id, filename) {
+  const path = `/${test}/${id}/${filename}`;
   const response = await dbx.filesDownload({
     path
   });
@@ -140,8 +145,8 @@ async function downloadFile(id, filename) {
   return response;
 }
 
-async function uploadFile(id, filename, contents) {
-  const path = `/${id}/${filename}`;
+async function uploadFile(test, id, filename, contents) {
+  const path = `/${test}/${id}/${filename}`;
   const response = await dbx.filesUpload({
     contents,
     path
@@ -152,8 +157,8 @@ async function uploadFile(id, filename, contents) {
   delete analysisDataCache[id];
 }
 
-async function listFolders() {
-  const path = '';
+async function listFolders(test) {
+  const path = `/${test}`;
   const response = await dbx.filesListFolder({
     path
   });
@@ -162,5 +167,5 @@ async function listFolders() {
 
   return response.entries
       .filter(entry => entry[".tag"] === 'folder')
-      .map(entry => entry.path_display.substr(1));
+      .map(entry => entry.name);
 }

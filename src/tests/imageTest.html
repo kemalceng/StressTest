@@ -23,7 +23,7 @@
   });
   socket.on('disconnect', function () { });
 
-  socket.on('start-image-test', function (fileId) {
+  socket.on('start-test', function (fileId) {
     console.log("Starting test! File Id:", fileId);
     lastDropboxFileId = fileId;
 
@@ -33,6 +33,9 @@
   });
 
 </script>
+
+<script src="httpHelper.js"></script>
+<script src="dropboxHelper.js"></script>
 
 <body>
 
@@ -62,9 +65,9 @@
   </div>
 
   <div>
-    <button type="button" onclick="listFolders()" class="btn btn-info btn-sm" data-toggle="modal" data-target="#modalSelectRecord">Dropbox</button>
+    <button type="button" onclick="listFolders('image')" class="btn btn-info btn-sm" data-toggle="modal" data-target="#modalSelectRecord">Dropbox</button>
     <input id="dropboxFile" type="text" placeholder="Dropbox id"/>
-    <button id="btnLoadRecords" onclick="loadFromDropbox()">Yükle</button>
+    <button id="btnLoadRecords" onclick="loadFromDropbox('image')">Yükle</button>
   </div>
 
 
@@ -131,7 +134,7 @@
     var noiseInterval = 3000;
     var isAdjustTimeModeOn = false;
     var categoryShift = 0;
-    var usingSyncRecord = false;
+    var usingSyncRecord = true;
 
     var image = document.getElementById("testImage");
 
@@ -232,72 +235,6 @@
       }
     }
 
-    function httpGetAsync(theUrl, callback) {
-      var xmlHttp = new XMLHttpRequest();
-      xmlHttp.onreadystatechange = function () {
-        if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
-          callback(xmlHttp.responseText);
-      }
-      xmlHttp.open("GET", theUrl, true); // true for asynchronous 
-      xmlHttp.send(null);
-    }
-
-    function loadFromDropbox() {
-      const recordId = document.getElementById("dropboxFile").value;
-      if (recordId) {
-        usingSyncRecord = true;
-
-        // Load metadata file
-        httpGetAsync(`/records/${recordId}?file=metadata`, function (response) {
-          const jsonContent = JSON.parse(response);
-
-          console.log("Age: " + jsonContent.age);
-          console.log("Gender: " + jsonContent.gender);
-
-          intervalOfRecord = jsonContent.interval;
-          console.log("Interval: " + intervalOfRecord);
-
-          imagesShownTimeList = jsonContent.imagesShownTimeList;
-          console.log("ImagesShownTimeList: " + imagesShownTimeList);
-
-          //Load EDA file
-          httpGetAsync(`/records/${recordId}`, function (response) {
-            console.log('EDA file loaded.')
-            var splitted = response.split(/\r\n|\n/);
-
-            edaInitTime = parseFloat(splitted[0]);
-            edaFrequency = parseFloat(splitted[1]);
-
-            drawEdaGraphics(splitted, edaInitTime, edaFrequency, "edaChartContainer");
-          });
-
-          // Load ECG file
-          httpGetAsync(`/records/${recordId}?file=ecg`, function (response) {
-            console.log('ECG file loaded.')
-            var splitted = response.split(/\r\n|\n/);
-
-            ecgInitTime = parseFloat(splitted[0]);
-            ecgFrequency = parseFloat(splitted[1]);
-
-            drawEcgGraphics(splitted, edaInitTime, edaFrequency, "ecgChartContainer");
-          });
-        });
-      }
-    }
-
-    function setDropboxId(id) {
-      document.getElementById("dropboxFile").value = id;
-      $('#modalSelectRecord').modal('hide');
-    }
-
-    function listFolders() {
-      httpGetAsync('/records', function (res) {
-        const recordList = JSON.parse(res).map(record => `<li onclick="setDropboxId('${record}')">${record}</li>`).join('');
-
-        document.getElementById("recordListInModal").innerHTML = `<ul>${recordList}</ul>`
-      });
-    }
-
     function stopTimer(isStoppedManually) {
       if (imageTimer != null || restTimer != null) {
         document.getElementById("btnStart").disabled = false;
@@ -326,7 +263,7 @@
           };
 
           if(lastDropboxFileId) {
-            fetch(`/records/${lastDropboxFileId}/metadata`, {
+            fetch(`/records/image/${lastDropboxFileId}/metadata`, {
               method: 'POST',
               body: JSON.stringify(metadataFileContent),
               headers: {
@@ -336,7 +273,7 @@
               if(res.ok) {
                 console.log('Uploaded metadata file successfully!');
               } else {
-                console.error('Metadata could not be saved! Dropbox id:' + lastDropboxFileId);
+                console.error('Image test metadata file could not be saved! Dropbox id:' + lastDropboxFileId);
               }
             });
           }
@@ -363,7 +300,7 @@
 
       image.src = imageSequence[imageIndex];
 
-      imagesShownTimeList.push({ imageFile: image.src.substr(image.src.indexOf("resource")), date: Date.now() });
+      imagesShownTimeList.push({ imageFile: image.src, date: Date.now() });
 
       imageIndex++;
     }
@@ -759,6 +696,7 @@
       }
     }
   </script>
+
 </body>
 
 </html>

@@ -1,22 +1,22 @@
 import { createAnalysis, listAnalyses, getAnalysis, updateAnalysis, uploadMetadataFile, stopAnalysis, listImagePaths, listStroopImagePaths } from '../controllers';
 
 export default function (app) {
-  app.route('/records')
+  app.route('/records/:test')
     .post(createAnalysis);
 
-  app.route('/records')
-      .get(listAnalyses);
-
-  app.route('/records/:recordId')
+  app.route('/records/:test/:recordId')
     .put(updateAnalysis);
 
-  app.route('/records/:recordId/metadata')
+  app.route('/records/:test')
+      .get(listAnalyses);
+
+  app.route('/records/:test/:recordId/metadata')
     .post(uploadMetadataFile)
 
-  app.route('/records/:recordId')
+  app.route('/records/:test/:recordId')
     .get(getAnalysis);
 
-  app.route('/records/:recordId/stop')
+  app.route('/records/:test/:recordId/stop')
     .put(stopAnalysis);
 
   app.route('/images')
