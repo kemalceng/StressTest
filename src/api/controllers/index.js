@@ -4,7 +4,7 @@ var Dropbox = require('dropbox').Dropbox;
 
 import { analysisDataCache } from '../../index';
 
-import { listImages } from '../../images';
+import { listImages, listStroopImages } from '../../images';
 
 const accessToken = process.env.DROPBOX_ACCESS_TOKEN;
 
@@ -28,16 +28,46 @@ export const createAnalysis = (req, res) => {
   });
 };
 
+export const listAnalyses = (req, res, next) => {
+  listFolders()
+      .then((folders) => {
+        res.send(folders)
+      })
+      .catch(err => {
+        console.error("Err",err);
+        next(err)
+      });
+}
+
 export const getAnalysis = (req, res, next) => {
   const id = req.params.recordId;
 
-  downloadFile(id)
+  let filename = 'eda.txt';
+
+  if(req.query.file === 'ecg') {
+    filename = 'ecg.txt';
+  } else if(req.query.file === 'metadata') {
+    filename = 'metadata.json';
+  }
+
+  downloadFile(id, filename)
     .then((response) => {
       res.send(Buffer.from(response.fileBinary))
     })
     .catch(err => next(err));
 }
 
+export const uploadMetadataFile = (req, res, next) => {
+  const id = req.params.recordId;
+  const fileContent = req.body;
+
+  uploadFile(id, 'metadata.json', JSON.stringify(fileContent))
+      .then(() => res.send(null))
+      .catch(err => {
+        console.error(err);
+        next(err);
+      });
+}
 
 export const updateAnalysis = (req, res) => {
   const id = req.params.recordId;
@@ -59,23 +89,32 @@ export const stopAnalysis = (req, res, next) => {
 
     // TODO: Fill lost frames
 
-    const analogChannel0Data = data
-      .map(sample => sample.frames)
-      .reduce((a, b) => a.concat(b), [])
+    const allFrames = data
+        .map(sample => sample.frames)
+        .reduce((a, b) => a.concat(b), []);
+
+    const analogChannel0Data = allFrames
       .map(bitalinoFrame => bitalinoFrame.analog[0])
       .map(frame => '\n' + frame)
       .reduce((a, b) => a + b) + '\n';
 
-    const contents = startTime + '\n' + frequency + analogChannel0Data;
+    const analogChannel1Data = allFrames
+        .map(bitalinoFrame => bitalinoFrame.analog[1])
+        .map(frame => '\n' + frame)
+        .reduce((a, b) => a + b) + '\n';
 
-    uploadFile(id, contents)
-      .then(() => {
-        return res.json({ 'message': 'Record file successfully saved!' });
-      })
-      .catch(err => {
-        console.error(err);
-        next(err);
-      });
+    const edaContents = startTime + '\n' + frequency + analogChannel0Data;
+    const ecgContents = startTime + '\n' + frequency + analogChannel1Data;
+
+    Promise.all([
+        uploadFile(id, 'eda.txt', edaContents),
+        uploadFile(id, 'ecg.txt', ecgContents)
+    ]).then(() => {
+      return res.json({ 'message': 'EDA and ECG files are successfully saved!' });
+    }).catch(err => {
+      console.error(err);
+      next(err);
+    });
 
   } else {
     next(null);
@@ -86,8 +125,12 @@ export const listImagePaths = (req, res) => {
    res.json(listImages());
 }
 
-async function downloadFile(id) {
-  const path = `/${id}.txt`;
+export const listStroopImagePaths = (req, res) => {
+  res.json(listStroopImages());
+}
+
+async function downloadFile(id, filename) {
+  const path = `/${id}/${filename}`;
   const response = await dbx.filesDownload({
     path
   });
@@ -97,9 +140,8 @@ async function downloadFile(id) {
   return response;
 }
 
-
-async function uploadFile(id, contents) {
-  const path = `/${id}.txt`;
+async function uploadFile(id, filename, contents) {
+  const path = `/${id}/${filename}`;
   const response = await dbx.filesUpload({
     contents,
     path
@@ -108,4 +150,17 @@ async function uploadFile(id, contents) {
   console.log("upload completed: ", response);
 
   delete analysisDataCache[id];
+}
+
+async function listFolders() {
+  const path = '';
+  const response = await dbx.filesListFolder({
+    path
+  });
+
+  console.log("Dropbox files: ", response);
+
+  return response.entries
+      .filter(entry => entry[".tag"] === 'folder')
+      .map(entry => entry.path_display.substr(1));
 }

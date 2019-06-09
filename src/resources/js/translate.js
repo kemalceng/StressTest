@@ -13,6 +13,7 @@ var dictionary = {
   lblInterval: { tr: "Aralık", en: "Interval: "},
   lblCount: { tr: "Adet", en: "Count: "},
   lblClientId: { tr: "Kullanıcı ID: ", en: "Client ID: "},
+  btnLoadRecords: { tr: "Yükle", "en": "Load"},
   eda_File: { tr: "EDA Dosyası :", en: "EDA File :"},
   acc_File: { tr: "ACC Dosyası :", en: "ACC File :"},
   record_File: { tr: "Kayıt Dosyası :", en: "Record File :"},

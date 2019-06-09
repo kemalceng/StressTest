@@ -2,8 +2,12 @@
 <html>
 
 <head>
-  <script src="../resources/js/canvasjs.min.js"></script>
-  <script src="../resources/js/jquery-2.2.3.js"></script>
+  <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+  <script src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
+
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
   <meta charset='utf-8'>
   <style>
     td {
@@ -19,6 +23,7 @@
   <div>
     <input id="radioColor" type="radio" name="stroopType" value="Color" checked /><span id="color">Renk</span>
     <input id="radioWord" type="radio" name="stroopType" value="Word" /><span id="word">Kelime</span>
+    <span id="lblCount">Adet: </span><input id="imageCount" type="number" style="width: 50px" onchange="onStroopImageCountChanged()"/>
 
     <button id="btnStart" onclick="startTest()" ondblclick="a = 1">Teste başla</button>
     <button id="btnStop" onclick="stopTest(true)" disabled=true>Durdur</button>
@@ -32,16 +37,16 @@
   <div id="selectionBar" style="display:none">
     <table>
       <tr>
-        <td onclick="answer('red')">
+        <td onclick="answer(1)">
           <input type="radio" name="answerSelection" value="Red" /><span id="answerRed">Kırmızı (1)</span>
         </td>
-        <td onclick="answer('yellow')">
+        <td onclick="answer(2)">
           <input type="radio" name="answerSelection" value="Yellow" /><span id="answerYellow">Sarı (2)</span>
         </td>
-        <td onclick="answer('green')">
+        <td onclick="answer(4)">
           <input type="radio" name="answerSelection" value="Green" /><span id="answerGreen">Yeşil (8)</span>
         </td>
-        <td onclick="answer('blue')">
+        <td onclick="answer(3)">
           <input type="radio" name="answerSelection" value="Blue" /><span id="answerBlue">Mavi (9)</span>
         </td>
       </tr>
@@ -75,8 +80,6 @@
   <!--Perform translation -->
   <script type="text/javascript" src="../resources/js/translate.js"></script>
 
-  <!--Contains stroopImageSequence variable and answers-->
-  <script type="text/javascript" src="stroopImageSequence.js"></script>
   <script type="text/javascript">
     window.addEventListener('load', init, false);
     window.addEventListener('keydown', this.keyPress, false);
@@ -89,10 +92,10 @@
 
       if (isStarted) {
         switch (code) {
-          case 49: answer('red'); break; //1 key
-          case 50: answer('yellow'); break; //2 key
-          case 56: answer('green'); break; //8 key
-          case 57: answer('blue'); break; //9 key
+          case 49: answer(1); break; //1 key
+          case 50: answer(2); break; //2 key
+          case 56: answer(4); break; //8 key
+          case 57: answer(3); break; //9 key
 
           default: // Do nothing
         }
@@ -138,10 +141,9 @@
       return avg;
     }
 
-    var imageIndex = 0;
+    var allStroopImages = [];
     var stroopImageIndex = 0;
-    var numberOfImages = stroopImageSequence.length;
-    var myVar = null;
+    var numberOfImages = 20;
     var imagesShownTimeList = [];
     var edaInitTime, accInitTime, hrInitTime, temperatureInitTime;
     var edaFrequency, accFrequency, edaPeriodInMs;
@@ -153,22 +155,32 @@
     var isColorSelected = true;
     var image = document.getElementById("testImage");
     var isStarted = false;
-    var adjustTimeModeOn = false;
+    var isAdjustTimeModeOn = false;
     var graphData = [];
     var durationsData = [];
     var edaData = accData = hrData = temperatureData = [];
     var edaDataLength = accDataLength = hrDataLength = temperatureDataLength = 0;
     var currentEdaChart;
     var analyzeTable = [];
+
+    function onStroopImageCountChanged() {
+      numberOfImages = document.getElementById("imageCount").value;
+      generateImageSequence().then(value => {
+        stroopImageSequence = value;
+        console.log(stroopImageSequence);
+      });
+    }
+
+    function isCorrect(answer, isColor, code) {
+      return isColor ? Math.floor(code / 10) === answer : code % 10 === answer;
+    }
+
     // To be changed with onselection
     function answer(selection) {
-      var correctness = false;
+      const stroopImagePath = stroopImageSequence[stroopImageIndex];
+      const imageCode = +(stroopImagePath.substr(stroopImagePath.indexOf('.png') - 2, 2));
 
-      if (isColorSelected) {
-        correctness = colorAnswers[stroopImageIndex] == selection;
-      } else {
-        correctness = wordAnswers[stroopImageIndex] == selection;
-      }
+      const correctness = isCorrect(selection, isColorSelected, imageCode)
 
       imagesShownTimeList.push({ imageFile: image.src.substr(image.src.indexOf("resource")), date: lastImageShownTime, dateAnswered: Date.now(), correct: correctness });
 
@@ -184,11 +196,41 @@
       lastImageShownTime = Date.now();
     }
 
-    function loadImages(fs) {
+    async function generateImageSequence() {
+      var generatedImageSequence = [];
+
+      var allImagesCount = allStroopImages.length;
+
+      var lastImageIndexes = [];
+
+      for (var i = 0; i < numberOfImages; i++) {
+        var randomImageIndex;
+
+        while(true) {
+         randomImageIndex = Math.floor(Math.random() * allImagesCount);
+          if(lastImageIndexes.indexOf(randomImageIndex) < 0) {
+            lastImageIndexes.push(randomImageIndex);
+            lastImageIndexes = lastImageIndexes.splice(-3);
+            break;
+          }
+        }
+        generatedImageSequence.push(allStroopImages[randomImageIndex]);
+      }
+
+      return generatedImageSequence;
+    }
+
+    function getImages() {
+      return $.getJSON('/stroop-images');
+    }
+
+    async function loadImages() {
+      allStroopImages = await getImages();
+
       var allImages = [];
-      for (var i = 0; i < stroopImageSequence.length; i++) {
+      for (var i = 0; i < allStroopImages.length; i++) {
         allImages[i] = new Image();
-        allImages[i].src = stroopImageSequence[i];
+        allImages[i].src = allStroopImages[i];
       }
     }
 
@@ -282,7 +324,15 @@
     function init() {
       initLocalStorage();
       checkForFileApiSupport();
-      loadImages();
+
+      document.getElementById("imageCount").value = numberOfImages;
+
+      loadImages().then(() => {
+        generateImageSequence().then(value => {
+          stroopImageSequence = value;
+        });
+      });
+
 
       document.getElementById('edaFile').addEventListener('change', handleEdaFileSelection, false);
       document.getElementById('accFile').addEventListener('change', handleAccFileSelection, false);

@@ -8,8 +8,12 @@
   <title>Resim Testi</title>
 </head>
 
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 <script src="/socket.io/socket.io.js"></script>
 <script>
+  var lastDropboxFileId;
+
   var socket = io('/');
   socket.on('connect', function () {
     console.log("Websocket Connected, id: ", socket.id);
@@ -21,21 +25,24 @@
 
   socket.on('start-image-test', function (fileId) {
     console.log("Starting test! File Id:", fileId);
+    lastDropboxFileId = fileId;
+
     document.getElementById("dropboxFile").value = fileId;
+
     startTimer();
   });
 
 </script>
 
 <body>
+
   <div>
-    <span id="lblInterval">Aralık: </span><input id="interval" type="number" style="width: 50px">ms</input>
-    <span id="lblCount">Adet: </span><input id="imageCount" type="number" style="width: 50px" onchange="onImageCountChanged()"/>
-    <button id="btnStart" onclick="startTimer()">Teste başla</button>
-    <button id="btnStop" onclick="stopTimer(1)" disabled=true>Durdur</button>
+    <span id="lblInterval">Aralık: </span><input id="interval" type="number" class=".form-control-sm">ms</input>
+    <span id="lblCount">Adet: </span><input id="imageCount" type="number" class=".form-control-sm" onchange="onImageCountChanged()"/>
+    <button id="btnStart" class="btn btn-primary btn-sm" onclick="startTimer()">Teste başla</button>
+    <button id="btnStop" class="btn btn-danger btn-sm" onclick="stopTimer(1)" disabled=true>Durdur</button>
     <output id="selectedFile"></output>
     <span id="lblClientId">Kullanıcı ID: </span><output id="wsId"></output>
-    Dropbox ID:<input id="dropboxFile"/>
   </div>
   <div>
     <div id="alert"></div>
@@ -53,19 +60,16 @@
   <div>
     <img id="testImage" src="../resources/images/ResimTesti.png" style="width:800px;height:600px" />
   </div>
-  <div>
-    <a download="imageShownTime.txt" id="downloadlink" style="display: none"><span id="download">İndir</span></a>
-  </div>
 
   <div>
-    <span id="eda_File">EDA Dosyası :</span><input id="edaFile" type="file" name="edaFile" />
-    <button id="btnDropbox" onclick="loadFromDropbox()">Dropbox</button>
-    <span id="acc_File">ACC Dosyası :</span><input id="accFile" type="file" name="accFile" />
-    <span id="record_File">Kayıt Dosyası :</span><input id="recordFile" type="file" name="recordFile" />
+    <button type="button" onclick="listFolders()" class="btn btn-info btn-sm" data-toggle="modal" data-target="#modalSelectRecord">Dropbox</button>
+    <input id="dropboxFile" type="text" placeholder="Dropbox id"/>
+    <button id="btnLoadRecords" onclick="loadFromDropbox()">Yükle</button>
   </div>
 
 
   <div id="edaChartContainer" style="height: 300px; width: 100%;"></div>
+  <div id="ecgChartContainer" style="height: 300px; width: 100%;"></div>
   <div id="accChartContainer" style="height: 300px; width: 100%;"></div>
   <div id="adjustTimeMode" style="display: none">
     <span id="adjust_Time_Mode">Zaman Ayarlama Modu :</span><input id="adjustTimeModeOn" type="radio"
@@ -76,6 +80,23 @@
 
   <!--Perform translation -->
   <script type="text/javascript" src="../resources/js/translate.js"></script>
+
+  <!-- Modal -->
+  <div id="modalSelectRecord" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title">Select Record</h4>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+        <div id="recordListInModal" class="modal-body"/>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script type="text/javascript">
     window.addEventListener('load', init, false);
@@ -106,6 +127,7 @@
     var increment, accIncrement;
     var testStartDate = 0;
     var interval = 1000;
+    var intervalOfRecord;
     var noiseInterval = 3000;
     var isAdjustTimeModeOn = false;
     var categoryShift = 0;
@@ -204,29 +226,11 @@
         document.getElementById("btnStart").disabled = true;
         document.getElementById("btnStop").disabled = false;
 
-        document.getElementById('downloadlink').style.display = "none";
-
         imagesShownTimeList = [];
 
         return startRestTimer();
       }
     }
-
-    var textFile = null,
-      makeTextFile = function (text) {
-        var data = new Blob([text], { type: 'text/plain' });
-
-        // If we are replacing a previously generated file we need to
-        // manually revoke the object URL to avoid memory leaks.
-        if (textFile !== null) {
-          window.URL.revokeObjectURL(textFile);
-        }
-
-        textFile = window.URL.createObjectURL(data);
-
-        // returns a URL you can use as a href
-        return textFile;
-      };
 
     function httpGetAsync(theUrl, callback) {
       var xmlHttp = new XMLHttpRequest();
@@ -239,19 +243,59 @@
     }
 
     function loadFromDropbox() {
-      var fileRef = document.getElementById("dropboxFile").value;
-      if (fileRef) {
+      const recordId = document.getElementById("dropboxFile").value;
+      if (recordId) {
         usingSyncRecord = true;
 
-        httpGetAsync(`/records/${fileRef}`, function (response) {
-          var splitted = response.split(/\r\n|\n/);
+        // Load metadata file
+        httpGetAsync(`/records/${recordId}?file=metadata`, function (response) {
+          const jsonContent = JSON.parse(response);
 
-          edaInitTime = parseFloat(splitted[0]);
-          edaFrequency = parseFloat(splitted[1]);
+          console.log("Age: " + jsonContent.age);
+          console.log("Gender: " + jsonContent.gender);
 
-          drawEdaGraphics(splitted, edaInitTime, edaFrequency, "edaChartContainer");
+          intervalOfRecord = jsonContent.interval;
+          console.log("Interval: " + intervalOfRecord);
+
+          imagesShownTimeList = jsonContent.imagesShownTimeList;
+          console.log("ImagesShownTimeList: " + imagesShownTimeList);
+
+          //Load EDA file
+          httpGetAsync(`/records/${recordId}`, function (response) {
+            console.log('EDA file loaded.')
+            var splitted = response.split(/\r\n|\n/);
+
+            edaInitTime = parseFloat(splitted[0]);
+            edaFrequency = parseFloat(splitted[1]);
+
+            drawEdaGraphics(splitted, edaInitTime, edaFrequency, "edaChartContainer");
+          });
+
+          // Load ECG file
+          httpGetAsync(`/records/${recordId}?file=ecg`, function (response) {
+            console.log('ECG file loaded.')
+            var splitted = response.split(/\r\n|\n/);
+
+            ecgInitTime = parseFloat(splitted[0]);
+            ecgFrequency = parseFloat(splitted[1]);
+
+            drawEcgGraphics(splitted, edaInitTime, edaFrequency, "ecgChartContainer");
+          });
         });
       }
+    }
+
+    function setDropboxId(id) {
+      document.getElementById("dropboxFile").value = id;
+      $('#modalSelectRecord').modal('hide');
+    }
+
+    function listFolders() {
+      httpGetAsync('/records', function (res) {
+        const recordList = JSON.parse(res).map(record => `<li onclick="setDropboxId('${record}')">${record}</li>`).join('');
+
+        document.getElementById("recordListInModal").innerHTML = `<ul>${recordList}</ul>`
+      });
     }
 
     function stopTimer(isStoppedManually) {
@@ -271,14 +315,31 @@
           //console.log(parsableList);
           imagesShownTimeList = JSON.parse(parsableList);
 
-          var link = document.getElementById('downloadlink');
-          link.download = testStartDate + "_" + interval + ".txt";
-
           var age = localStorage.getItem("userAge");
           var gender = localStorage.getItem("userGender");
-          var fileContent = age + '\n' + gender + '\n' + JSON.stringify(strImagesShownTime);
-          link.href = makeTextFile(fileContent);
-          link.style.display = 'block';
+
+          const metadataFileContent = {
+            age,
+            gender,
+            interval,
+            imagesShownTimeList
+          };
+
+          if(lastDropboxFileId) {
+            fetch(`/records/${lastDropboxFileId}/metadata`, {
+              method: 'POST',
+              body: JSON.stringify(metadataFileContent),
+              headers: {
+                'Content-Type': 'application/json'
+              }
+            }).then( res => {
+              if(res.ok) {
+                console.log('Uploaded metadata file successfully!');
+              } else {
+                console.error('Metadata could not be saved! Dropbox id:' + lastDropboxFileId);
+              }
+            });
+          }
         }
 
         clearInterval(restTimer);
@@ -318,10 +379,6 @@
       });
 
       document.getElementById("interval").value = interval;
-
-      document.getElementById('edaFile').addEventListener('change', handleEdaFileSelection, false);
-      document.getElementById('accFile').addEventListener('change', handleAccFileSelection, false);
-      document.getElementById('recordFile').addEventListener('change', handleRecordFileSelection, false);
     }
 
     function checkForFileApiSupport() {
@@ -336,47 +393,26 @@
     function handleRecordFileSelection(evt) {
       var files = evt.target.files;
 
-      var output = [];
       for (var i = 0, f; f = files[i]; i++) {
-        output.push('<li><strong>', f.name, '</strong> (', f.type || 'n/a', ') - ',
-          f.size, ' bytes, last modified: ',
-          f.lastModifiedDate, '</li>');
-
         var r = new FileReader();
         r.onload = (function (f) {
           return function (e) {
             var contents = e.target.result;
-            var splitted = contents.split('\n');
 
-            userAge = parseInt(splitted[0]);
-            userGender = splitted[1];
+            const jsonContent = JSON.parse(contents);
 
-            console.log("Age: " + userAge);
-            console.log("Gender: " + userGender);
+            console.log("Age: " + jsonContent.age);
+            console.log("Gender: " + jsonContent.gender);
+            console.log("Interval: " + jsonContent.interval);
 
-            var imagesShownTimeInfo = splitted[2];
-            // Remove quotes
-            imagesShownTimeInfo = imagesShownTimeInfo.slice(1);
-            imagesShownTimeInfo = imagesShownTimeInfo.slice(0, imagesShownTimeInfo.length - 1);
-
-            // Remove backslashes
-            console.log("Before Replace :\n" + imagesShownTimeInfo);
-            imagesShownTimeInfo = imagesShownTimeInfo.split('\\').join('');
-            console.log("After Replace :\n" + imagesShownTimeInfo);
-
-            var parsableList = '{"times": ' + imagesShownTimeInfo + ' }';
-            console.log(parsableList);
-            imagesShownTimeList = JSON.parse(parsableList);
-            console.log(imagesShownTimeList);
-            //console.log("First Answered: " + imagesShownTimeList.times[0].date);
+            imagesShownTimeList = jsonContent.imagesShownTimeList;
+            console.log("ImagesShownTimeList: " + imagesShownTimeList);
           };
         })(f);
 
         r.readAsText(f);
 
       }
-      document.getElementById('selectedFile').innerHTML = '<ul>' + output.join('') + '</ul>';
-
     }
 
     function handleEdaFileSelection(evt) {
@@ -447,7 +483,7 @@
       var contentsAsDataPoint = [];
       // Increment in ms
       increment = (1 / frequency);
-      var interval = document.getElementById('interval').value;
+      var interval = intervalOfRecord;
       pointsInInterval = frequency * (interval / 1000);
       console.log('Freq: ' + frequency + ',  PointsForOneImage: ' + pointsInInterval);
 
@@ -539,6 +575,47 @@
       chart.render();
 
       currentEdaChart = chart;
+    }
+
+    function drawEcgGraphics(splitted, initTime, frequency, chartSelection) {
+      var contentsAsDataPoint = [];
+      // Increment in ms
+      increment = (1 / frequency);
+
+      pointsInInterval = frequency * (intervalOfRecord / 1000);
+      console.log('Freq: ' + frequency + ',  PointsForOneImage: ' + pointsInInterval);
+
+      for (var i = 2, time = initTime; i < splitted.length; i++ , time += increment) {
+        //contentsAsDataPoint.push({ x: time,  y: parseFloat(splitted[i]) } );
+        contentsAsDataPoint.push({ y: parseFloat(splitted[i]) });
+      }
+
+      graphData = [
+        {
+          showInLegend: false,
+          click: onClick,
+          type: "line",
+          dataPoints: contentsAsDataPoint
+        }
+      ];
+
+      // Chart
+      var chart = new CanvasJS.Chart(chartSelection, {
+        zoomEnabled: true,
+        panEnabled: true,
+        legend: {
+          horizontalAlign: "right",
+          verticalAlign: "center"
+        },
+        axisY: {
+          includeZero: false
+        },
+        title: {
+          text: "ECG"
+        },
+        data: graphData
+      });
+      chart.render();
     }
 
     function myTrim(x) {
@@ -653,7 +730,7 @@
     }
 
     function setImageAtTime(timeOfPoint) {
-      timeOfPointInMs = timeOfPoint * 1000;
+      let timeOfPointInMs = timeOfPoint * 1000;
       timeOfPointInMs += adjustmentInMs;
 
       console.log("setImageAtTime:" + timeOfPointInMs);
