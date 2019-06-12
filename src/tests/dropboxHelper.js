@@ -8,6 +8,10 @@ function loadFromDropbox(test) {
             console.log("Age: " + jsonContent.age);
             console.log("Gender: " + jsonContent.gender);
 
+            preRestIntervalOfRecord = jsonContent.preRestInterval || 0;
+            console.log("Pre rest (ms): " + preRestIntervalOfRecord)
+
+
             if(test === 'image') {
                 intervalOfRecord = jsonContent.interval;
                 console.log("Interval: " + intervalOfRecord);

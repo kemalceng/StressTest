@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+  <script src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
+  <meta charset='utf-8'>
+  <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0, shrink-to-fit=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>VR Resim Testi</title>
+
+  <style>
+    canvas {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+
+</head>
+
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+<script src="/socket.io/socket.io.js"></script>
+
+<script>
+  // Get the VRDisplay and save it for later.
+  var vrDisplay = null;
+  navigator.getVRDisplays().then(function(displays) {
+    if (displays.length > 0) {
+      vrDisplay = displays[0];
+    }
+  });
+</script>
+
+<script>
+  var lastDropboxFileId;
+
+  var socket = io('/');
+  socket.on('connect', function () {
+    console.log("Websocket Connected, id: ", socket.id);
+
+    document.getElementById("wsId").innerHTML = socket.id.substr(0, 4).toLowerCase();
+
+  });
+  socket.on('disconnect', function () { });
+
+  socket.on('start-test', function (fileId) {
+    console.log("Starting test! File Id:", fileId);
+    lastDropboxFileId = fileId;
+
+    document.getElementById("dropboxFile").value = fileId;
+
+    startVrTest();
+  });
+
+</script>
+
+<script src="httpHelper.js"></script>
+<script src="dropboxHelper.js"></script>
+
+<body>
+
+<div>
+  <span id="lblInterval">Aralık: </span><input id="interval" type="number" class=".form-control-sm">ms</input>
+  <span id="lblCount">Adet: </span><input id="imageCount" type="number" class=".form-control-sm" onchange="onImageCountChanged()"/>
+  <button id="btnStart" class="btn btn-primary btn-sm" onclick="startVrTest()">Teste başla</button>
+  <button id="btnStop" class="btn btn-danger btn-sm" onclick="stopVrTest(true)" disabled=true>Durdur</button>
+  <output id="selectedFile"></output>
+  <span id="lblClientId">Kullanıcı ID: </span><output id="wsId"></output>
+</div>
+<div>
+  <div id="alert"></div>
+</div>
+<div>
+  <audio id="warningAudio" controls hidden>
+    <source src="../resources/sounds/warning.mp3" type="audio/mpeg">
+    Your browser does not support the audio tag.
+  </audio>
+  <audio id="noiseAudio" controls hidden>
+    <source src="../resources/sounds/chirp.mp3" type="audio/mpeg">
+    Your browser does not support the audio tag.
+  </audio>
+</div>
+<div>
+  <img id="testImage" src="../resources/images/vr_glasses.jpg" style="width:800px;height:600px" />
+</div>
+
+<div>
+  <button type="button" onclick="listFolders('image')" class="btn btn-info btn-sm" data-toggle="modal" data-target="#modalSelectRecord">Dropbox</button>
+  <input id="dropboxFile" type="text" placeholder="Dropbox id"/>
+  <button id="btnLoadRecords" onclick="loadFromDropbox('image')">Yükle</button>
+</div>
+
+
+<div id="edaChartContainer" style="height: 300px; width: 100%;"></div>
+<div id="ecgChartContainer" style="height: 300px; width: 100%;"></div>
+<div id="accChartContainer" style="height: 300px; width: 100%;"></div>
+<div id="adjustTimeMode" style="display: none">
+  <span id="adjust_Time_Mode">Zaman Ayarlama Modu :</span><input id="adjustTimeModeOn" type="radio"
+                                                                 name="adjustTimeMode" /><span id="adjust_Time_Mode_On">Açık</span>
+  <input id="adjustTimeModeOff" type="radio" name="adjustTimeMode" checked /><span
+        id="adjust_Time_Mode_Off">Kapalı</span>
+</div>
+
+<!--Perform translation -->
+<script type="text/javascript" src="../resources/js/translate.js"></script>
+
+<!-- Modal -->
+<div id="modalSelectRecord" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Select Record</h4>
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+      </div>
+      <div id="recordListInModal" class="modal-body"/>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+  window.addEventListener('load', init, false);
+  window.addEventListener('keydown', this.keyPress, false);
+
+  var adjustmentInMs = 0;
+  var deltaInMs = 250;
+
+  function keyPress(e) {
+    var code = e.keyCode;
+
+    switch (code) {
+            // + key
+      case 187: adjustmentInMs += deltaInMs; console.log("Adjustment: " + adjustmentInMs); break;
+            // - key
+      case 189: adjustmentInMs -= deltaInMs; console.log("Adjustment: " + adjustmentInMs); break;
+    }
+  }
+  var imageSequence = [];
+  var imageIndex = 0;
+  var numberOfImages = 50;
+  var imageTimer = null;
+  var restTimer = null;
+  var noiseTimer = null;
+  var imagesShownTimeList = [];
+  var edaInitTime, ecgInitTime;
+  var edaFrequency, ecgFrequency;
+  var increment, accIncrement;
+  var testStartDate = 0;
+  var interval = 1000;
+  var intervalOfRecord;
+  var preRestInterval = 5000; // 30sec rest;
+  var preRestIntervalOfRecord;
+  var noiseInterval = 3000;
+  var isAdjustTimeModeOn = false;
+  var categoryShift = 0;
+  var usingSyncRecord = true;
+  var testFinished = false;
+  var image = document.getElementById("testImage");
+
+  function loadImages() {
+    var allImages = [];
+    for (i = 0; i < imageSequence.length; i++) {
+      allImages[i] = new Image();
+      allImages[i].src = imageSequence[i];
+    }
+  }
+
+  function getImages() {
+    return $.getJSON('/images');
+  }
+
+  async function generateImageSequence() {
+    var generatedImageSequence = [];
+
+    const images = await getImages();
+
+    var allImagesCount = images.length;
+
+    for (var i = 0; i < numberOfImages; i++) {
+      var randomImageIndex = Math.floor(Math.random() * allImagesCount);
+      generatedImageSequence.push(images[randomImageIndex]);
+    }
+
+    return generatedImageSequence;
+  }
+
+  function onImageCountChanged() {
+    numberOfImages = document.getElementById("imageCount").value;
+    generateImageSequence().then(value => {
+      imageSequence = value;
+      loadImages();
+    });
+  }
+
+  function initLocalStorage() {
+    if (typeof (Storage) !== "undefined") {
+      // Clear local storage
+      localStorage.setItem("imagesShownTime", null);
+    } else {
+      image.src = "../resources/images/Sorry.jpg";
+      testFinished = true;
+    }
+  }
+
+  function makeNoise() {
+    if (noiseTimer != null) {
+      var noiseAudio = document.getElementById("noiseAudio");
+      noiseAudio.play();
+    }
+  }
+
+  function startRestTimer() {
+    var restInterval = 5000; // 30sec rest
+    if (restTimer == null) {
+      image.src = "../resources/images/rest.jpg";
+
+      restTimer = setInterval(finishRest, restInterval);
+
+      return restTimer;
+    }
+  }
+
+  function finishRest() {
+    if (restTimer != null) {
+      clearInterval(restTimer);
+      restTimer = null;
+
+      var warning = document.getElementById("warningAudio");
+      warning.play();
+      noiseInterval = interval * 3;
+      noiseTimer = setInterval(makeNoise, noiseInterval);
+    }
+  }
+
+  function startVrTest() {
+    initLocalStorage();
+
+    testFinished = false;
+
+    vrDisplay.requestPresent([{source: renderer.domElement}]);
+    vrDisplay.requestAnimationFrame(animate);
+
+    document.getElementById("btnStart").disabled = true;
+    document.getElementById("btnStop").disabled = false;
+
+    imagesShownTimeList = [];
+
+    interval = document.getElementById("interval").value;
+
+    return startRestTimer();
+  }
+
+  function stopVrTest(isStoppedManually) {
+    testFinished = true;
+    imageIndex = 0;
+
+    document.getElementById("btnStart").disabled = false;
+    document.getElementById("btnStop").disabled = true;
+
+    if (isStoppedManually) {
+      initLocalStorage();
+    } else {
+      // Update local storage
+      var strImagesShownTime = JSON.stringify(imagesShownTimeList);
+      localStorage.setItem("imagesShownTime", strImagesShownTime);
+
+      var parsableList = '{"times":' + strImagesShownTime + '}';
+      //console.log(parsableList);
+      imagesShownTimeList = JSON.parse(parsableList);
+
+      var age = localStorage.getItem("userAge");
+      var gender = localStorage.getItem("userGender");
+
+      const metadataFileContent = {
+        age,
+        gender,
+        interval,
+        imagesShownTimeList
+      };
+
+      if(lastDropboxFileId) {
+        fetch(`/records/vrImage/${lastDropboxFileId}/metadata`, {
+          method: 'POST',
+          body: JSON.stringify(metadataFileContent),
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }).then( res => {
+          if(res.ok) {
+            console.log('Uploaded metadata file successfully!');
+          } else {
+            console.error('VR image test metadata file could not be saved! Dropbox id:' + lastDropboxFileId);
+          }
+        });
+      }
+    }
+
+    clearInterval(restTimer);
+    restTimer = null;
+
+    clearInterval(noiseTimer);
+    noiseTimer = null;
+  }
+
+  // TODO: Use ksdfjkjsdfsk
+  function imageChanger() {
+    if (imageIndex >= numberOfImages) {
+      stopTimer(false);
+      image.src = "../resources/images/TestFinished.png";
+      return;
+    }
+
+    image.src = imageSequence[imageIndex];
+
+    imagesShownTimeList.push({ imageFile: image.src, date: Date.now() });
+
+    imageIndex++;
+  }
+
+  function init() {
+    initLocalStorage();
+    checkForFileApiSupport();
+
+    document.getElementById("imageCount").value = numberOfImages;
+    generateImageSequence().then(value => {
+      imageSequence = value;
+      loadImages();
+    });
+
+    document.getElementById("interval").value = interval;
+  }
+
+  function checkForFileApiSupport() {
+    if (window.File && window.FileReader && window.FileList && window.Blob) {
+      // All the File APIs are supported.
+    }
+    else {
+      document.getElementById('alert').innerHTML = "The File APIs are not fully supported in this browser.";
+    }
+  }
+
+  var photoTypeDataPoints = [];
+  var graphData = [];
+  var currentEdaChart;
+  var pointsInInterval;
+
+  function drawEdaGraphics(splitted, initTime, frequency, chartSelection) {
+    var contentsAsDataPoint = [];
+    // Increment in ms
+    increment = (1 / frequency);
+    var interval = intervalOfRecord;
+    pointsInInterval = frequency * (interval / 1000);
+    console.log('Freq: ' + frequency + ',  PointsForOneImage: ' + pointsInInterval);
+
+    categoryShift = preRestIntervalOfRecord * frequency / 1000;
+
+    for (var i = 2, time = initTime; i < splitted.length; i++ , time += increment) {
+      //contentsAsDataPoint.push({ x: time,  y: parseFloat(splitted[i]) } );
+      contentsAsDataPoint.push({ y: parseFloat(splitted[i]) });
+    }
+
+    for (var i = 0; i < numberOfImages; i++) {
+      var pathRegexp = /\/categories\/(.*?)\//g;
+      var categoryGroup = [];
+      var path = imageSequence[i];
+      var match = pathRegexp.exec(path);
+
+      while (i < numberOfImages) {
+        var currentPathRegexp = /\/categories\/(.*?)\//g;
+        var currentPath = imageSequence[i];
+        var currentMatch = currentPathRegexp.exec(currentPath);
+        if (currentMatch[1] == match[1]) {
+
+          for (var j = 0; j < pointsInInterval; j++) {
+            categoryGroup.push({ x: pointsInInterval * i + j + categoryShift, y: -0.01 });
+          }
+
+          i++;
+        } else {
+          i--;
+          break;
+        }
+      }
+
+      photoTypeDataPoints.push({ type: match[1], categoryGroup });
+    }
+    console.log(photoTypeDataPoints);
+
+    graphData = [
+      {
+        showInLegend: false,
+        click: onClick,
+        type: "line",
+        dataPoints: contentsAsDataPoint
+      }
+    ];
+
+    for (var i = 0; i < photoTypeDataPoints.length; i++) {
+      graphData.push(
+              {
+                showInLegend: true,
+                name: photoTypeDataPoints[i].type,
+                type: "line",
+                dataPoints: photoTypeDataPoints[i].categoryGroup
+              }
+      );
+    }
+
+
+    // Chart
+    var chart = new CanvasJS.Chart(chartSelection, {
+      zoomEnabled: true,
+      panEnabled: true,
+      legend: {
+        horizontalAlign: "right",
+        verticalAlign: "center"
+      },
+      axisY: {
+        includeZero: false
+      },
+      title: {
+        text: "EDA"
+      },
+
+      data: graphData,
+
+      legend: {
+        cursor: "pointer",
+        itemclick: function (e) {
+          //console.log("legend click: " + e.dataPointIndex);
+          //console.log(e);
+          if (typeof (e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
+            e.dataSeries.visible = false;
+          } else {
+            e.dataSeries.visible = true;
+          }
+
+          e.chart.render();
+        }
+      }
+    });
+    chart.render();
+
+    currentEdaChart = chart;
+  }
+
+  function drawEcgGraphics(splitted, initTime, frequency, chartSelection) {
+    var contentsAsDataPoint = [];
+    // Increment in ms
+    increment = (1 / frequency);
+
+    pointsInInterval = frequency * (intervalOfRecord / 1000);
+    console.log('Freq: ' + frequency + ',  PointsForOneImage: ' + pointsInInterval);
+
+    for (var i = 2, time = initTime; i < splitted.length; i++ , time += increment) {
+      //contentsAsDataPoint.push({ x: time,  y: parseFloat(splitted[i]) } );
+      contentsAsDataPoint.push({ y: parseFloat(splitted[i]) });
+    }
+
+    graphData = [
+      {
+        showInLegend: false,
+        click: onClick,
+        type: "line",
+        dataPoints: contentsAsDataPoint
+      }
+    ];
+
+    // Chart
+    var chart = new CanvasJS.Chart(chartSelection, {
+      zoomEnabled: true,
+      panEnabled: true,
+      legend: {
+        horizontalAlign: "right",
+        verticalAlign: "center"
+      },
+      axisY: {
+        includeZero: false
+      },
+      title: {
+        text: "ECG"
+      },
+      data: graphData
+    });
+    chart.render();
+  }
+
+  function myTrim(x) {
+    return x.replace(/^\s+|\s+$/gm, '');
+  }
+
+  function onClick(e) {
+    var timeOfPoint = edaInitTime + (e.dataPoint.x * increment);
+    if (usingSyncRecord) {
+      setImageAtIndex(e.dataPoint.x);
+    } else {
+      setImageAtTime(timeOfPoint);
+    }
+  }
+
+  function setImageAtIndex(index) {
+    console.log("setImageAtIndex:" + index, "pointsInInterval: " + pointsInInterval);
+
+    var imageIndex = Math.floor((index - categoryShift) / pointsInInterval);
+    if (imageIndex >= imageSequence.length) {
+      image.src = "../resources/images/imageNotFound.png";
+    } else if(imageIndex < 0) {
+      image.src = "../resources/images/rest.jpg";
+    } else {
+      image.src = JSON.stringify(imageSequence[imageIndex]).split('"').join('');
+    }
+  }
+
+  function setImageAtTime(timeOfPoint) {
+    let timeOfPointInMs = timeOfPoint * 1000;
+    timeOfPointInMs += adjustmentInMs;
+
+    console.log("setImageAtTime:" + timeOfPointInMs);
+    console.log("First image is shown at: " + JSON.stringify(imagesShownTimeList.times[0].date));
+
+    if (imagesShownTimeList != [] && parseInt(imagesShownTimeList.times[0].date) <= timeOfPointInMs) {
+      for (var i = 1; i < imagesShownTimeList.times.length; i++) {
+        //console.log(JSON.stringify(imagesShownTimeList.times[i].dateImageShown));
+
+        if (parseInt(imagesShownTimeList.times[i].date) >= timeOfPointInMs) {
+          image.src = JSON.stringify(imagesShownTimeList.times[i - 1].imageFile).split('"').join('');
+
+          console.log(image.src);
+          break;
+        } else if (i == imagesShownTimeList.times.length - 1 && timeOfPointInMs > parseInt(imagesShownTimeList.times[i].date)) {
+          // Last image
+          image.src = JSON.stringify(imagesShownTimeList.times[i].imageFile).split('"').join('');
+          console.log(image.src);
+          break;
+
+        }
+      }
+    } else {
+      console.log("Image not found!");
+      image.src = "../resources/images/imageNotFound.png";
+    }
+  }
+</script>
+
+<canvas id="webgl"></canvas>
+
+</body>
+
+<script>
+  WebVRConfig = {
+    BUFFER_SCALE: 1.0,
+  };
+
+  document.addEventListener('touchmove', function(e) {
+    e.preventDefault();
+  });
+</script>
+
+<!-- three.js library -->
+<script src="../resources/js/three.js"></script>
+
+<!-- VRControls.js applies the WebVR transformations to a three.js camera object. -->
+<script src="../resources/js/VRControls.js"></script>
+
+<!-- VREffect.js handles stereo camera setup and rendering.  -->
+<script src="../resources/js/VREffect.js"></script>
+
+<!-- A polyfill for the WebVR API.  -->
+<!--<script src="../resources/js/webvr-polyfill.js"></script>-->
+<script src='https://cdn.jsdelivr.net/npm/webvr-polyfill@latest/build/webvr-polyfill.js'></script>
+
+<script src="imageSequence.js"></script>
+
+<script>
+  var canvas = document.getElementById('webgl');
+
+  // Setup three.js WebGL renderer. Note: Antialiasing is a big performance hit.
+  // Only enable it if you actually need to.
+  var renderer = new THREE.WebGLRenderer({antialias: false, canvas: canvas});
+  renderer.setPixelRatio(Math.floor(window.devicePixelRatio));
+
+  // Create a three.js scene.
+  var scene = new THREE.Scene();
+
+  // Create a three.js camera.
+  var camera = new THREE.PerspectiveCamera(75, canvas.clientWidth / canvas.clientHeight, 0.1, 10000);
+
+  // Apply VR headset positional data to camera.
+  var controls = new THREE.VRControls(camera);
+
+  // Apply VR stereo rendering to renderer.
+  var effect = new THREE.VREffect(renderer);
+  effect.setSize(canvas.clientWidth, canvas.clientHeight, false);
+
+  // Add a repeating grid as a skybox.
+  var boxWidth = 5;
+  var loader = new THREE.TextureLoader();
+
+  loader.load('../resources/images/countdown.jpg', onTextureLoaded);
+  loader.load('../resources/images/rest.jpg', onPicLoaded);
+
+  var cube;
+
+  function onPicLoaded(texture) {
+    // Create 3D objects.
+    var geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+    var material = new THREE.MeshBasicMaterial({
+      map:texture
+    });
+    cube = new THREE.Mesh(geometry, material);
+
+    // Position cube mesh
+    cube.position.z = -1;
+
+    // Add cube mesh to your three.js scene
+    scene.add(cube);
+
+  }
+
+  function onTextureLoaded(texture) {
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(boxWidth, boxWidth);
+
+    var geometry = new THREE.BoxGeometry(boxWidth, boxWidth, boxWidth);
+    var material = new THREE.MeshBasicMaterial({
+      map: texture,
+      side: THREE.BackSide
+    });
+
+    var skybox = new THREE.Mesh(geometry, material);
+    scene.add(skybox);
+  }
+
+  // Request animation frame loop function
+  var lastRender = 0;
+  var imageChangeCounter = 0;
+  var next = 0;
+
+  function animate(timestamp) {
+    var delta = timestamp - lastRender;
+    lastRender = timestamp;
+
+    imageChangeCounter += delta;
+
+    if(!testFinished && restTimer == null && imageChangeCounter > interval) {
+      imageChangeCounter = 0;
+      if(next >= imageSequence.length) {
+        next = 0;
+        loader.load('../resources/images/TestFinished.png', onPicLoaded);
+        stopVrTest(false);
+      } else {
+        loader.load(imageSequence[next], onPicLoaded);
+        next = next + 1;
+      }
+    }
+
+    // Apply rotation to cube mesh
+    //cube.rotation.y += delta * 0.0006;
+
+    // Update VR headset position and apply to camera.
+    controls.update();
+
+    // Render the scene.
+    effect.render(scene, camera);
+
+    // Keep looping.
+    vrDisplay.requestAnimationFrame(animate);
+  }
+
+  function onResize() {
+    // The delay ensures the browser has a chance to layout
+    // the page and update the clientWidth/clientHeight.
+    // This problem particularly crops up under iOS.
+    if (!onResize.resizeDelay) {
+      onResize.resizeDelay = setTimeout(function () {
+        onResize.resizeDelay = null;
+        console.log('Resizing to %s x %s.', canvas.clientWidth, canvas.clientHeight);
+        effect.setSize(canvas.clientWidth, canvas.clientHeight, false);
+        camera.aspect = canvas.clientWidth / canvas.clientHeight;
+        camera.updateProjectionMatrix();
+      }, 250);
+    }
+  }
+
+  function onVRDisplayPresentChange() {
+    console.log('onVRDisplayPresentChange');
+    onResize();
+    buttons.hidden = vrDisplay.isPresenting;
+  }
+
+  // Resize the WebGL canvas when we resize and also when we change modes.
+  window.addEventListener('resize', onResize);
+  window.addEventListener('vrdisplaypresentchange', onVRDisplayPresentChange);
+
+  // // Button click handlers.
+  // document.querySelector('button#fullscreen').addEventListener('click', function() {
+  //   enterFullscreen(renderer.domElement);
+  // });
+  // document.querySelector('button#vr').addEventListener('click', function() {
+  //   vrDisplay.requestPresent([{source: renderer.domElement}]);
+  // });
+  // document.querySelector('button#reset').addEventListener('click', function() {
+  //   vrDisplay.resetPose();
+  // });
+  //
+  // function enterFullscreen (el) {
+  //   if (el.requestFullscreen) {
+  //     el.requestFullscreen();
+  //   } else if (el.mozRequestFullScreen) {
+  //     el.mozRequestFullScreen();
+  //   } else if (el.webkitRequestFullscreen) {
+  //     el.webkitRequestFullscreen();
+  //   } else if (el.msRequestFullscreen) {
+  //     el.msRequestFullscreen();
+  //   }
+  // }
+
+</script>
+
+</html>

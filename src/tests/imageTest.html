@@ -125,12 +125,14 @@
     var restTimer = null;
     var noiseTimer = null;
     var imagesShownTimeList = [];
-    var edaInitTime, accInitTime;
-    var edaFrequency, accFrequency;
+    var edaInitTime, accInitTime, ecgInitTime;
+    var edaFrequency, accFrequency, ecgFrequency;
     var increment, accIncrement;
     var testStartDate = 0;
     var interval = 1000;
     var intervalOfRecord;
+    var preRestInterval = 5000; // 30sec rest;
+    var preRestIntervalOfRecord;
     var noiseInterval = 3000;
     var isAdjustTimeModeOn = false;
     var categoryShift = 0;
@@ -184,12 +186,11 @@
     }
 
     function startRestTimer() {
-      var restInterval = 5000; // 30sec rest
       if (restTimer == null) {
 
         image.src = "../resources/images/rest.jpg";
 
-        restTimer = setInterval(haveRest, restInterval);
+        restTimer = setInterval(haveRest, preRestInterval);
 
         return restTimer;
       }
@@ -259,6 +260,7 @@
             age,
             gender,
             interval,
+            preRestInterval,
             imagesShownTimeList
           };
 
@@ -423,6 +425,8 @@
       var interval = intervalOfRecord;
       pointsInInterval = frequency * (interval / 1000);
       console.log('Freq: ' + frequency + ',  PointsForOneImage: ' + pointsInInterval);
+
+      categoryShift = preRestIntervalOfRecord * frequency / 1000;
 
       for (var i = 2, time = initTime; i < splitted.length; i++ , time += increment) {
         //contentsAsDataPoint.push({ x: time,  y: parseFloat(splitted[i]) } );
@@ -658,9 +662,11 @@
     function setImageAtIndex(index) {
       console.log("setImageAtIndex:" + index, "pointsInInterval: " + pointsInInterval);
 
-      var imageIndex = Math.floor(index / pointsInInterval);
+      var imageIndex = Math.floor((index - categoryShift) / pointsInInterval);
       if (imageIndex >= imageSequence.length) {
         image.src = "../resources/images/imageNotFound.png";
+      } else if(imageIndex < 0) {
+        image.src = "../resources/images/rest.jpg";
       } else {
         image.src = JSON.stringify(imageSequence[imageIndex]).split('"').join('');
       }

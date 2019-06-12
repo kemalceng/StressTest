@@ -6,6 +6,7 @@ var dictionary = {
   image_test: { tr: "Resim Testi", en: "Image Test"},
   stroop_test: { tr: "Stroop Testi", en: "Stroop Test"},
   countdown_test: { tr: "Geri Sayım Testi", en: "Countdown Test"},
+  vr_image_test: { tr: "Sanal Gerçeklik Resim Testi", en: "VR Image Test"},
   color: { tr: "Renk", en: "Color"},
   word: { tr: "Kelime", en: "Word"},
   btnStart: { tr: "Teste Başla", en: "Start Test"},
