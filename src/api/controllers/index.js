@@ -115,6 +115,8 @@ export const stopAnalysis = (req, res, next) => {
         uploadFile(test, id, 'eda.txt', edaContents),
         uploadFile(test, id, 'ecg.txt', ecgContents)
     ]).then(() => {
+      delete analysisDataCache[id];
+
       return res.json({ 'message': 'EDA and ECG files are successfully saved!' });
     }).catch(err => {
       console.error(err);
@@ -153,8 +155,6 @@ async function uploadFile(test, id, filename, contents) {
   });
 
   console.log("upload completed: ", response);
-
-  delete analysisDataCache[id];
 }
 
 async function listFolders(test) {
