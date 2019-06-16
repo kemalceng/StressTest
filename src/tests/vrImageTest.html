@@ -1,6 +1,4 @@
 <!DOCTYPE html>
-<html>
-
 <head>
   <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
   <script src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
@@ -10,6 +8,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>VR Resim Testi</title>
+  <link rel="stylesheet" href="../resources/css/mystyle.css">
 
   <style>
     canvas {
@@ -61,495 +60,495 @@
 <script src="dropboxHelper.js"></script>
 
 <body>
+  <div id="container">
+    <div>
+      <span id="lblInterval">Aralık: </span><input id="interval" type="number" class=".form-control-sm">ms</input>
+      <span id="lblCount">Adet: </span><input id="imageCount" type="number" class=".form-control-sm" onchange="onImageCountChanged()"/>
+      <button id="btnStart" class="btn btn-primary btn-sm" onclick="startVrTest()">Teste başla</button>
+      <button id="btnStop" class="btn btn-danger btn-sm" onclick="stopVrTest(true)" disabled=true>Durdur</button>
+      <output id="selectedFile"></output>
+      <span id="lblClientId">Kullanıcı ID: </span><output id="wsId"></output>
+    </div>
+    <div>
+      <div id="alert"></div>
+    </div>
+    <div>
+      <audio id="warningAudio" controls hidden>
+        <source src="../resources/sounds/warning.mp3" type="audio/mpeg">
+        Your browser does not support the audio tag.
+      </audio>
+      <audio id="noiseAudio" controls hidden>
+        <source src="../resources/sounds/chirp.mp3" type="audio/mpeg">
+        Your browser does not support the audio tag.
+      </audio>
+    </div>
+    <div>
+      <img id="testImage" src="../resources/images/vr_glasses.jpg" style="width:800px;height:600px" />
+    </div>
 
-<div>
-  <span id="lblInterval">Aralık: </span><input id="interval" type="number" class=".form-control-sm">ms</input>
-  <span id="lblCount">Adet: </span><input id="imageCount" type="number" class=".form-control-sm" onchange="onImageCountChanged()"/>
-  <button id="btnStart" class="btn btn-primary btn-sm" onclick="startVrTest()">Teste başla</button>
-  <button id="btnStop" class="btn btn-danger btn-sm" onclick="stopVrTest(true)" disabled=true>Durdur</button>
-  <output id="selectedFile"></output>
-  <span id="lblClientId">Kullanıcı ID: </span><output id="wsId"></output>
-</div>
-<div>
-  <div id="alert"></div>
-</div>
-<div>
-  <audio id="warningAudio" controls hidden>
-    <source src="../resources/sounds/warning.mp3" type="audio/mpeg">
-    Your browser does not support the audio tag.
-  </audio>
-  <audio id="noiseAudio" controls hidden>
-    <source src="../resources/sounds/chirp.mp3" type="audio/mpeg">
-    Your browser does not support the audio tag.
-  </audio>
-</div>
-<div>
-  <img id="testImage" src="../resources/images/vr_glasses.jpg" style="width:800px;height:600px" />
-</div>
+    <div>
+      <button type="button" onclick="listFolders('image')" class="btn btn-info btn-sm" data-toggle="modal" data-target="#modalSelectRecord">Dropbox</button>
+      <input id="dropboxFile" type="text" placeholder="Dropbox id"/>
+      <button id="btnLoadRecords" onclick="loadFromDropbox('image')">Yükle</button>
+    </div>
 
-<div>
-  <button type="button" onclick="listFolders('image')" class="btn btn-info btn-sm" data-toggle="modal" data-target="#modalSelectRecord">Dropbox</button>
-  <input id="dropboxFile" type="text" placeholder="Dropbox id"/>
-  <button id="btnLoadRecords" onclick="loadFromDropbox('image')">Yükle</button>
-</div>
+    <div id="edaChartContainer" style="height: 300px; width: 100%;"></div>
+    <div id="ecgChartContainer" style="height: 300px; width: 100%;"></div>
+    <div id="accChartContainer" style="height: 300px; width: 100%;"></div>
+    <div id="adjustTimeMode" style="display: none">
+      <span id="adjust_Time_Mode">Zaman Ayarlama Modu :</span><input id="adjustTimeModeOn" type="radio"
+                                                                     name="adjustTimeMode" /><span id="adjust_Time_Mode_On">Açık</span>
+      <input id="adjustTimeModeOff" type="radio" name="adjustTimeMode" checked /><span
+            id="adjust_Time_Mode_Off">Kapalı</span>
+    </div>
 
+    <!--Perform translation -->
+    <script type="text/javascript" src="../resources/js/translate.js"></script>
 
-<div id="edaChartContainer" style="height: 300px; width: 100%;"></div>
-<div id="ecgChartContainer" style="height: 300px; width: 100%;"></div>
-<div id="accChartContainer" style="height: 300px; width: 100%;"></div>
-<div id="adjustTimeMode" style="display: none">
-  <span id="adjust_Time_Mode">Zaman Ayarlama Modu :</span><input id="adjustTimeModeOn" type="radio"
-                                                                 name="adjustTimeMode" /><span id="adjust_Time_Mode_On">Açık</span>
-  <input id="adjustTimeModeOff" type="radio" name="adjustTimeMode" checked /><span
-        id="adjust_Time_Mode_Off">Kapalı</span>
-</div>
-
-<!--Perform translation -->
-<script type="text/javascript" src="../resources/js/translate.js"></script>
-
-<!-- Modal -->
-<div id="modalSelectRecord" class="modal fade" role="dialog">
-  <div class="modal-dialog">
-    <!-- Modal content-->
-    <div class="modal-content">
-      <div class="modal-header">
-        <h4 class="modal-title">Select Record</h4>
-        <button type="button" class="close" data-dismiss="modal">&times;</button>
-      </div>
-      <div id="recordListInModal" class="modal-body"/>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+    <!-- Modal -->
+    <div id="modalSelectRecord" class="modal fade" role="dialog">
+      <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title">Select Record</h4>
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+          </div>
+          <div id="recordListInModal" class="modal-body"/>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
 
-<script type="text/javascript">
-  window.addEventListener('load', init, false);
-  window.addEventListener('keydown', this.keyPress, false);
+    <script type="text/javascript">
+      window.addEventListener('load', init, false);
+      window.addEventListener('keydown', this.keyPress, false);
 
-  var adjustmentInMs = 0;
-  var deltaInMs = 250;
+      var adjustmentInMs = 0;
+      var deltaInMs = 250;
 
-  function keyPress(e) {
-    var code = e.keyCode;
+      function keyPress(e) {
+        var code = e.keyCode;
 
-    switch (code) {
-            // + key
-      case 187: adjustmentInMs += deltaInMs; console.log("Adjustment: " + adjustmentInMs); break;
-            // - key
-      case 189: adjustmentInMs -= deltaInMs; console.log("Adjustment: " + adjustmentInMs); break;
-    }
-  }
-  var imageSequence = [];
-  var imageIndex = 0;
-  var numberOfImages = 50;
-  var imageTimer = null;
-  var restTimer = null;
-  var noiseTimer = null;
-  var imagesShownTimeList = [];
-  var edaInitTime, ecgInitTime;
-  var edaFrequency, ecgFrequency;
-  var increment, accIncrement;
-  var testStartDate = 0;
-  var interval = 1000;
-  var intervalOfRecord;
-  var preRestInterval = 5000; // 30sec rest;
-  var preRestIntervalOfRecord;
-  var noiseInterval = 3000;
-  var isAdjustTimeModeOn = false;
-  var categoryShift = 0;
-  var usingSyncRecord = true;
-  var testFinished = false;
-  var image = document.getElementById("testImage");
+        switch (code) {
+                // + key
+          case 187: adjustmentInMs += deltaInMs; console.log("Adjustment: " + adjustmentInMs); break;
+                // - key
+          case 189: adjustmentInMs -= deltaInMs; console.log("Adjustment: " + adjustmentInMs); break;
+        }
+      }
+      var imageSequence = [];
+      var imageIndex = 0;
+      var numberOfImages = 50;
+      var imageTimer = null;
+      var restTimer = null;
+      var noiseTimer = null;
+      var imagesShownTimeList = [];
+      var edaInitTime, ecgInitTime;
+      var edaFrequency, ecgFrequency;
+      var increment, accIncrement;
+      var testStartDate = 0;
+      var interval = 1000;
+      var intervalOfRecord;
+      var preRestInterval = 10000; // 10sec rest;
+      var preRestIntervalOfRecord;
+      var noiseInterval = 3000;
+      var isAdjustTimeModeOn = false;
+      var categoryShift = 0;
+      var usingSyncRecord = true;
+      var testFinished = false;
+      var image = document.getElementById("testImage");
 
-  function loadImages() {
-    var allImages = [];
-    for (i = 0; i < imageSequence.length; i++) {
-      allImages[i] = new Image();
-      allImages[i].src = imageSequence[i];
-    }
-  }
+      function loadImages() {
+        var allImages = [];
+        for (i = 0; i < imageSequence.length; i++) {
+          allImages[i] = new Image();
+          allImages[i].src = imageSequence[i];
+        }
+      }
 
-  function getImages() {
-    return $.getJSON('/images');
-  }
+      function getImages() {
+        return $.getJSON('/images');
+      }
 
-  async function generateImageSequence() {
-    var generatedImageSequence = [];
+      async function generateImageSequence() {
+        var generatedImageSequence = [];
 
-    const images = await getImages();
+        const images = await getImages();
 
-    var allImagesCount = images.length;
+        var allImagesCount = images.length;
 
-    for (var i = 0; i < numberOfImages; i++) {
-      var randomImageIndex = Math.floor(Math.random() * allImagesCount);
-      generatedImageSequence.push(images[randomImageIndex]);
-    }
+        for (var i = 0; i < numberOfImages; i++) {
+          var randomImageIndex = Math.floor(Math.random() * allImagesCount);
+          generatedImageSequence.push(images[randomImageIndex]);
+        }
 
-    return generatedImageSequence;
-  }
+        return generatedImageSequence;
+      }
 
-  function onImageCountChanged() {
-    numberOfImages = document.getElementById("imageCount").value;
-    generateImageSequence().then(value => {
-      imageSequence = value;
-      loadImages();
-    });
-  }
-
-  function initLocalStorage() {
-    if (typeof (Storage) !== "undefined") {
-      // Clear local storage
-      localStorage.setItem("imagesShownTime", null);
-    } else {
-      image.src = "../resources/images/Sorry.jpg";
-      testFinished = true;
-    }
-  }
-
-  function makeNoise() {
-    if (noiseTimer != null) {
-      var noiseAudio = document.getElementById("noiseAudio");
-      noiseAudio.play();
-    }
-  }
-
-  function startRestTimer() {
-    var restInterval = 5000; // 30sec rest
-    if (restTimer == null) {
-      image.src = "../resources/images/rest.jpg";
-
-      restTimer = setInterval(finishRest, restInterval);
-
-      return restTimer;
-    }
-  }
-
-  function finishRest() {
-    if (restTimer != null) {
-      clearInterval(restTimer);
-      restTimer = null;
-
-      var warning = document.getElementById("warningAudio");
-      warning.play();
-      noiseInterval = interval * 3;
-      noiseTimer = setInterval(makeNoise, noiseInterval);
-    }
-  }
-
-  function startVrTest() {
-    initLocalStorage();
-
-    testFinished = false;
-
-    vrDisplay.requestPresent([{source: renderer.domElement}]);
-    vrDisplay.requestAnimationFrame(animate);
-
-    document.getElementById("btnStart").disabled = true;
-    document.getElementById("btnStop").disabled = false;
-
-    imagesShownTimeList = [];
-
-    interval = document.getElementById("interval").value;
-
-    return startRestTimer();
-  }
-
-  function stopVrTest(isStoppedManually) {
-    testFinished = true;
-    imageIndex = 0;
-
-    document.getElementById("btnStart").disabled = false;
-    document.getElementById("btnStop").disabled = true;
-
-    if (isStoppedManually) {
-      initLocalStorage();
-    } else {
-      // Update local storage
-      var strImagesShownTime = JSON.stringify(imagesShownTimeList);
-      localStorage.setItem("imagesShownTime", strImagesShownTime);
-
-      var parsableList = '{"times":' + strImagesShownTime + '}';
-      //console.log(parsableList);
-      imagesShownTimeList = JSON.parse(parsableList);
-
-      var age = localStorage.getItem("userAge");
-      var gender = localStorage.getItem("userGender");
-
-      const metadataFileContent = {
-        age,
-        gender,
-        interval,
-        imagesShownTimeList
-      };
-
-      if(lastDropboxFileId) {
-        fetch(`/records/vrImage/${lastDropboxFileId}/metadata`, {
-          method: 'POST',
-          body: JSON.stringify(metadataFileContent),
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }).then( res => {
-          if(res.ok) {
-            console.log('Uploaded metadata file successfully!');
-          } else {
-            console.error('VR image test metadata file could not be saved! Dropbox id:' + lastDropboxFileId);
-          }
+      function onImageCountChanged() {
+        numberOfImages = document.getElementById("imageCount").value;
+        generateImageSequence().then(value => {
+          imageSequence = value;
+          loadImages();
         });
       }
-    }
 
-    clearInterval(restTimer);
-    restTimer = null;
-
-    clearInterval(noiseTimer);
-    noiseTimer = null;
-  }
-
-  // TODO: Use ksdfjkjsdfsk
-  function imageChanger() {
-    if (imageIndex >= numberOfImages) {
-      stopTimer(false);
-      image.src = "../resources/images/TestFinished.png";
-      return;
-    }
-
-    image.src = imageSequence[imageIndex];
-
-    imagesShownTimeList.push({ imageFile: image.src, date: Date.now() });
-
-    imageIndex++;
-  }
-
-  function init() {
-    initLocalStorage();
-    checkForFileApiSupport();
-
-    document.getElementById("imageCount").value = numberOfImages;
-    generateImageSequence().then(value => {
-      imageSequence = value;
-      loadImages();
-    });
-
-    document.getElementById("interval").value = interval;
-  }
-
-  function checkForFileApiSupport() {
-    if (window.File && window.FileReader && window.FileList && window.Blob) {
-      // All the File APIs are supported.
-    }
-    else {
-      document.getElementById('alert').innerHTML = "The File APIs are not fully supported in this browser.";
-    }
-  }
-
-  var photoTypeDataPoints = [];
-  var graphData = [];
-  var currentEdaChart;
-  var pointsInInterval;
-
-  function drawEdaGraphics(splitted, initTime, frequency, chartSelection) {
-    var contentsAsDataPoint = [];
-    // Increment in ms
-    increment = (1 / frequency);
-    var interval = intervalOfRecord;
-    pointsInInterval = frequency * (interval / 1000);
-    console.log('Freq: ' + frequency + ',  PointsForOneImage: ' + pointsInInterval);
-
-    categoryShift = preRestIntervalOfRecord * frequency / 1000;
-
-    for (var i = 2, time = initTime; i < splitted.length; i++ , time += increment) {
-      //contentsAsDataPoint.push({ x: time,  y: parseFloat(splitted[i]) } );
-      contentsAsDataPoint.push({ y: parseFloat(splitted[i]) });
-    }
-
-    for (var i = 0; i < numberOfImages; i++) {
-      var pathRegexp = /\/categories\/(.*?)\//g;
-      var categoryGroup = [];
-      var path = imageSequence[i];
-      var match = pathRegexp.exec(path);
-
-      while (i < numberOfImages) {
-        var currentPathRegexp = /\/categories\/(.*?)\//g;
-        var currentPath = imageSequence[i];
-        var currentMatch = currentPathRegexp.exec(currentPath);
-        if (currentMatch[1] == match[1]) {
-
-          for (var j = 0; j < pointsInInterval; j++) {
-            categoryGroup.push({ x: pointsInInterval * i + j + categoryShift, y: -0.01 });
-          }
-
-          i++;
+      function initLocalStorage() {
+        if (typeof (Storage) !== "undefined") {
+          // Clear local storage
+          localStorage.setItem("imagesShownTime", null);
         } else {
-          i--;
-          break;
+          image.src = "../resources/images/Sorry.jpg";
+          testFinished = true;
         }
       }
 
-      photoTypeDataPoints.push({ type: match[1], categoryGroup });
-    }
-    console.log(photoTypeDataPoints);
-
-    graphData = [
-      {
-        showInLegend: false,
-        click: onClick,
-        type: "line",
-        dataPoints: contentsAsDataPoint
+      function makeNoise() {
+        if (noiseTimer != null) {
+          var noiseAudio = document.getElementById("noiseAudio");
+          noiseAudio.play();
+        }
       }
-    ];
 
-    for (var i = 0; i < photoTypeDataPoints.length; i++) {
-      graphData.push(
-              {
-                showInLegend: true,
-                name: photoTypeDataPoints[i].type,
-                type: "line",
-                dataPoints: photoTypeDataPoints[i].categoryGroup
+      function startRestTimer() {
+        if (restTimer == null) {
+          image.src = "../resources/images/rest.jpg";
+
+          preRestInterval = localStorage.getItem("preRestInterval") || preRestInterval;
+
+          restTimer = setInterval(finishRest, preRestInterval);
+
+          return restTimer;
+        }
+      }
+
+      function finishRest() {
+        if (restTimer != null) {
+          clearInterval(restTimer);
+          restTimer = null;
+
+          var warning = document.getElementById("warningAudio");
+          warning.play();
+          noiseInterval = interval * 3;
+          noiseTimer = setInterval(makeNoise, noiseInterval);
+        }
+      }
+
+      function startVrTest() {
+        initLocalStorage();
+
+        testFinished = false;
+
+        vrDisplay.requestPresent([{source: renderer.domElement}]);
+        vrDisplay.requestAnimationFrame(animate);
+
+        document.getElementById("btnStart").disabled = true;
+        document.getElementById("btnStop").disabled = false;
+
+        imagesShownTimeList = [];
+
+        interval = document.getElementById("interval").value;
+
+        return startRestTimer();
+      }
+
+      function stopVrTest(isStoppedManually) {
+        testFinished = true;
+        imageIndex = 0;
+
+        document.getElementById("btnStart").disabled = false;
+        document.getElementById("btnStop").disabled = true;
+
+        if (isStoppedManually) {
+          initLocalStorage();
+        } else {
+          // Update local storage
+          var strImagesShownTime = JSON.stringify(imagesShownTimeList);
+          localStorage.setItem("imagesShownTime", strImagesShownTime);
+
+          var parsableList = '{"times":' + strImagesShownTime + '}';
+          //console.log(parsableList);
+          imagesShownTimeList = JSON.parse(parsableList);
+
+          var age = localStorage.getItem("userAge");
+          var gender = localStorage.getItem("userGender");
+
+          const metadataFileContent = {
+            age,
+            gender,
+            interval,
+            imagesShownTimeList
+          };
+
+          if(lastDropboxFileId) {
+            fetch(`/records/vrImage/${lastDropboxFileId}/metadata`, {
+              method: 'POST',
+              body: JSON.stringify(metadataFileContent),
+              headers: {
+                'Content-Type': 'application/json'
               }
-      );
-    }
+            }).then( res => {
+              if(res.ok) {
+                console.log('Uploaded metadata file successfully!');
+              } else {
+                console.error('VR image test metadata file could not be saved! Dropbox id:' + lastDropboxFileId);
+              }
+            });
+          }
+        }
 
+        clearInterval(restTimer);
+        restTimer = null;
 
-    // Chart
-    var chart = new CanvasJS.Chart(chartSelection, {
-      zoomEnabled: true,
-      panEnabled: true,
-      legend: {
-        horizontalAlign: "right",
-        verticalAlign: "center"
-      },
-      axisY: {
-        includeZero: false
-      },
-      title: {
-        text: "EDA"
-      },
+        clearInterval(noiseTimer);
+        noiseTimer = null;
+      }
 
-      data: graphData,
+      // TODO: Use ksdfjkjsdfsk
+      function imageChanger() {
+        if (imageIndex >= numberOfImages) {
+          stopTimer(false);
+          image.src = "../resources/images/TestFinished.png";
+          return;
+        }
 
-      legend: {
-        cursor: "pointer",
-        itemclick: function (e) {
-          //console.log("legend click: " + e.dataPointIndex);
-          //console.log(e);
-          if (typeof (e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
-            e.dataSeries.visible = false;
-          } else {
-            e.dataSeries.visible = true;
+        image.src = imageSequence[imageIndex];
+
+        imagesShownTimeList.push({ imageFile: image.src, date: Date.now() });
+
+        imageIndex++;
+      }
+
+      function init() {
+        initLocalStorage();
+        checkForFileApiSupport();
+
+        document.getElementById("imageCount").value = numberOfImages;
+        generateImageSequence().then(value => {
+          imageSequence = value;
+          loadImages();
+        });
+
+        document.getElementById("interval").value = interval;
+      }
+
+      function checkForFileApiSupport() {
+        if (window.File && window.FileReader && window.FileList && window.Blob) {
+          // All the File APIs are supported.
+        }
+        else {
+          document.getElementById('alert').innerHTML = "The File APIs are not fully supported in this browser.";
+        }
+      }
+
+      var photoTypeDataPoints = [];
+      var graphData = [];
+      var currentEdaChart;
+      var pointsInInterval;
+
+      function drawEdaGraphics(splitted, initTime, frequency, chartSelection) {
+        var contentsAsDataPoint = [];
+        // Increment in ms
+        increment = (1 / frequency);
+        var interval = intervalOfRecord;
+        pointsInInterval = frequency * (interval / 1000);
+        console.log('Freq: ' + frequency + ',  PointsForOneImage: ' + pointsInInterval);
+
+        categoryShift = preRestIntervalOfRecord * frequency / 1000;
+
+        for (var i = 2, time = initTime; i < splitted.length; i++ , time += increment) {
+          //contentsAsDataPoint.push({ x: time,  y: parseFloat(splitted[i]) } );
+          contentsAsDataPoint.push({ y: parseFloat(splitted[i]) });
+        }
+
+        for (var i = 0; i < numberOfImages; i++) {
+          var pathRegexp = /\/categories\/(.*?)\//g;
+          var categoryGroup = [];
+          var path = imageSequence[i];
+          var match = pathRegexp.exec(path);
+
+          while (i < numberOfImages) {
+            var currentPathRegexp = /\/categories\/(.*?)\//g;
+            var currentPath = imageSequence[i];
+            var currentMatch = currentPathRegexp.exec(currentPath);
+            if (currentMatch[1] == match[1]) {
+
+              for (var j = 0; j < pointsInInterval; j++) {
+                categoryGroup.push({ x: pointsInInterval * i + j + categoryShift, y: -0.01 });
+              }
+
+              i++;
+            } else {
+              i--;
+              break;
+            }
           }
 
-          e.chart.render();
+          photoTypeDataPoints.push({ type: match[1], categoryGroup });
+        }
+        console.log(photoTypeDataPoints);
+
+        graphData = [
+          {
+            showInLegend: false,
+            click: onClick,
+            type: "line",
+            dataPoints: contentsAsDataPoint
+          }
+        ];
+
+        for (var i = 0; i < photoTypeDataPoints.length; i++) {
+          graphData.push(
+                  {
+                    showInLegend: true,
+                    name: photoTypeDataPoints[i].type,
+                    type: "line",
+                    dataPoints: photoTypeDataPoints[i].categoryGroup
+                  }
+          );
+        }
+
+
+        // Chart
+        var chart = new CanvasJS.Chart(chartSelection, {
+          zoomEnabled: true,
+          panEnabled: true,
+          legend: {
+            horizontalAlign: "right",
+            verticalAlign: "center"
+          },
+          axisY: {
+            includeZero: false
+          },
+          title: {
+            text: "EDA"
+          },
+
+          data: graphData,
+
+          legend: {
+            cursor: "pointer",
+            itemclick: function (e) {
+              //console.log("legend click: " + e.dataPointIndex);
+              //console.log(e);
+              if (typeof (e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
+                e.dataSeries.visible = false;
+              } else {
+                e.dataSeries.visible = true;
+              }
+
+              e.chart.render();
+            }
+          }
+        });
+        chart.render();
+
+        currentEdaChart = chart;
+      }
+
+      function drawEcgGraphics(splitted, initTime, frequency, chartSelection) {
+        var contentsAsDataPoint = [];
+        // Increment in ms
+        increment = (1 / frequency);
+
+        pointsInInterval = frequency * (intervalOfRecord / 1000);
+        console.log('Freq: ' + frequency + ',  PointsForOneImage: ' + pointsInInterval);
+
+        for (var i = 2, time = initTime; i < splitted.length; i++ , time += increment) {
+          //contentsAsDataPoint.push({ x: time,  y: parseFloat(splitted[i]) } );
+          contentsAsDataPoint.push({ y: parseFloat(splitted[i]) });
+        }
+
+        graphData = [
+          {
+            showInLegend: false,
+            click: onClick,
+            type: "line",
+            dataPoints: contentsAsDataPoint
+          }
+        ];
+
+        // Chart
+        var chart = new CanvasJS.Chart(chartSelection, {
+          zoomEnabled: true,
+          panEnabled: true,
+          legend: {
+            horizontalAlign: "right",
+            verticalAlign: "center"
+          },
+          axisY: {
+            includeZero: false
+          },
+          title: {
+            text: "ECG"
+          },
+          data: graphData
+        });
+        chart.render();
+      }
+
+      function myTrim(x) {
+        return x.replace(/^\s+|\s+$/gm, '');
+      }
+
+      function onClick(e) {
+        var timeOfPoint = edaInitTime + (e.dataPoint.x * increment);
+        if (usingSyncRecord) {
+          setImageAtIndex(e.dataPoint.x);
+        } else {
+          setImageAtTime(timeOfPoint);
         }
       }
-    });
-    chart.render();
 
-    currentEdaChart = chart;
-  }
+      function setImageAtIndex(index) {
+        console.log("setImageAtIndex:" + index, "pointsInInterval: " + pointsInInterval);
 
-  function drawEcgGraphics(splitted, initTime, frequency, chartSelection) {
-    var contentsAsDataPoint = [];
-    // Increment in ms
-    increment = (1 / frequency);
-
-    pointsInInterval = frequency * (intervalOfRecord / 1000);
-    console.log('Freq: ' + frequency + ',  PointsForOneImage: ' + pointsInInterval);
-
-    for (var i = 2, time = initTime; i < splitted.length; i++ , time += increment) {
-      //contentsAsDataPoint.push({ x: time,  y: parseFloat(splitted[i]) } );
-      contentsAsDataPoint.push({ y: parseFloat(splitted[i]) });
-    }
-
-    graphData = [
-      {
-        showInLegend: false,
-        click: onClick,
-        type: "line",
-        dataPoints: contentsAsDataPoint
-      }
-    ];
-
-    // Chart
-    var chart = new CanvasJS.Chart(chartSelection, {
-      zoomEnabled: true,
-      panEnabled: true,
-      legend: {
-        horizontalAlign: "right",
-        verticalAlign: "center"
-      },
-      axisY: {
-        includeZero: false
-      },
-      title: {
-        text: "ECG"
-      },
-      data: graphData
-    });
-    chart.render();
-  }
-
-  function myTrim(x) {
-    return x.replace(/^\s+|\s+$/gm, '');
-  }
-
-  function onClick(e) {
-    var timeOfPoint = edaInitTime + (e.dataPoint.x * increment);
-    if (usingSyncRecord) {
-      setImageAtIndex(e.dataPoint.x);
-    } else {
-      setImageAtTime(timeOfPoint);
-    }
-  }
-
-  function setImageAtIndex(index) {
-    console.log("setImageAtIndex:" + index, "pointsInInterval: " + pointsInInterval);
-
-    var imageIndex = Math.floor((index - categoryShift) / pointsInInterval);
-    if (imageIndex >= imageSequence.length) {
-      image.src = "../resources/images/imageNotFound.png";
-    } else if(imageIndex < 0) {
-      image.src = "../resources/images/rest.jpg";
-    } else {
-      image.src = JSON.stringify(imageSequence[imageIndex]).split('"').join('');
-    }
-  }
-
-  function setImageAtTime(timeOfPoint) {
-    let timeOfPointInMs = timeOfPoint * 1000;
-    timeOfPointInMs += adjustmentInMs;
-
-    console.log("setImageAtTime:" + timeOfPointInMs);
-    console.log("First image is shown at: " + JSON.stringify(imagesShownTimeList.times[0].date));
-
-    if (imagesShownTimeList != [] && parseInt(imagesShownTimeList.times[0].date) <= timeOfPointInMs) {
-      for (var i = 1; i < imagesShownTimeList.times.length; i++) {
-        //console.log(JSON.stringify(imagesShownTimeList.times[i].dateImageShown));
-
-        if (parseInt(imagesShownTimeList.times[i].date) >= timeOfPointInMs) {
-          image.src = JSON.stringify(imagesShownTimeList.times[i - 1].imageFile).split('"').join('');
-
-          console.log(image.src);
-          break;
-        } else if (i == imagesShownTimeList.times.length - 1 && timeOfPointInMs > parseInt(imagesShownTimeList.times[i].date)) {
-          // Last image
-          image.src = JSON.stringify(imagesShownTimeList.times[i].imageFile).split('"').join('');
-          console.log(image.src);
-          break;
-
+        var imageIndex = Math.floor((index - categoryShift) / pointsInInterval);
+        if (imageIndex >= imageSequence.length) {
+          image.src = "../resources/images/imageNotFound.png";
+        } else if(imageIndex < 0) {
+          image.src = "../resources/images/rest.jpg";
+        } else {
+          image.src = JSON.stringify(imageSequence[imageIndex]).split('"').join('');
         }
       }
-    } else {
-      console.log("Image not found!");
-      image.src = "../resources/images/imageNotFound.png";
-    }
-  }
-</script>
 
-<canvas id="webgl"></canvas>
+      function setImageAtTime(timeOfPoint) {
+        let timeOfPointInMs = timeOfPoint * 1000;
+        timeOfPointInMs += adjustmentInMs;
 
+        console.log("setImageAtTime:" + timeOfPointInMs);
+        console.log("First image is shown at: " + JSON.stringify(imagesShownTimeList.times[0].date));
+
+        if (imagesShownTimeList != [] && parseInt(imagesShownTimeList.times[0].date) <= timeOfPointInMs) {
+          for (var i = 1; i < imagesShownTimeList.times.length; i++) {
+            //console.log(JSON.stringify(imagesShownTimeList.times[i].dateImageShown));
+
+            if (parseInt(imagesShownTimeList.times[i].date) >= timeOfPointInMs) {
+              image.src = JSON.stringify(imagesShownTimeList.times[i - 1].imageFile).split('"').join('');
+
+              console.log(image.src);
+              break;
+            } else if (i == imagesShownTimeList.times.length - 1 && timeOfPointInMs > parseInt(imagesShownTimeList.times[i].date)) {
+              // Last image
+              image.src = JSON.stringify(imagesShownTimeList.times[i].imageFile).split('"').join('');
+              console.log(image.src);
+              break;
+
+            }
+          }
+        } else {
+          console.log("Image not found!");
+          image.src = "../resources/images/imageNotFound.png";
+        }
+      }
+    </script>
+
+    <canvas id="webgl"></canvas>
+  </div>
 </body>
 
 <script>
@@ -721,7 +720,5 @@
   //     el.msRequestFullscreen();
   //   }
   // }
-
 </script>
-
 </html>

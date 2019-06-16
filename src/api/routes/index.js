@@ -1,4 +1,4 @@
-import { createAnalysis, listAnalyses, getAnalysis, updateAnalysis, uploadMetadataFile, stopAnalysis, listImagePaths, listStroopImagePaths } from '../controllers';
+import { createAnalysis, listAnalyses, getAnalysis, updateAnalysis, uploadMetadataFile, stopAnalysis, listImagePaths, listStroopImagePaths, listSdmtImagePaths} from '../controllers';
 
 export default function (app) {
   app.route('/records/:test')
@@ -24,5 +24,8 @@ export default function (app) {
 
   app.route('/stroop-images')
       .get(listStroopImagePaths);
+
+  app.route('/sdmt-images')
+      .get(listSdmtImagePaths);
 
 }

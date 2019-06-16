@@ -10,14 +10,7 @@
   <script src="/socket.io/socket.io.js"></script>
 
   <meta charset='utf-8'>
-  <style>
-    td {
-      text-align: left;
-      border: 1px solid black;
-      width: 100px;
-    }
-  </style>
-  <title>Stroop Testi</title>
+  <title>SDMT Testi</title>
   <link rel="stylesheet" href="../resources/css/mystyle.css">
 </head>
 
@@ -50,9 +43,7 @@
 <body>
   <div id="container">
     <div>
-      <input id="radioColor" type="radio" name="stroopType" value="Color" checked /><span id="color">Renk</span>
-      <input id="radioWord" type="radio" name="stroopType" value="Word" /><span id="word">Kelime</span>
-      <span id="lblCount">Adet: </span><input id="imageCount" type="number" style="width: 50px" onchange="onStroopImageCountChanged()"/>
+      <span id="lblCount">Adet: </span><input id="imageCount" type="number" style="width: 50px" onchange="onSdmtImageCountChanged()"/>
 
       <button id="btnStart" onclick="startRestTimer()" ondblclick="a = 1">Teste başla</button>
       <button id="btnStop" onclick="stopTest(true)" disabled=true>Durdur</button>
@@ -68,42 +59,56 @@
       </audio>
     </div>
     <div>
-      <img id="testImage" src="../resources/images/StroopTesti.png" style="width:800px;height:600px" />
+      <div id="ongoingTest" style="flex-direction:column; align-items:center; display: none;">
+        <img src="../resources/images/sdmt.png" style="height: 200px"/>
+        <div style="width: 800px;height: 365px;display: flex;align-items: center;flex-direction: column;justify-content: center;">
+          <img id="askedImage" style="max-height: 365px"/>
+        </div>
+      </div>
+      <img id="testImage" src="../resources/images/sdmtTest.png" style="width:800px;height:600px"/>
     </div>
-    <div id="selectionBar" style="display:none">
+    <div id="selectionBar" style="display:none;">
       <table>
         <tr>
           <td onclick="answer(1)">
-            <input type="radio" name="answerSelection" value="Red" /><span id="answerRed">Kırmızı (1)</span>
+            <input type="radio" name="answerSelection" value="1" /><span style="padding-left: 10px;">1</span>
           </td>
           <td onclick="answer(2)">
-            <input type="radio" name="answerSelection" value="Yellow" /><span id="answerYellow">Sarı (2)</span>
-          </td>
-          <td onclick="answer(4)">
-            <input type="radio" name="answerSelection" value="Green" /><span id="answerGreen">Yeşil (8)</span>
+            <input type="radio" name="answerSelection" value="2" /><span style="padding-left: 10px;">2</span>
           </td>
           <td onclick="answer(3)">
-            <input type="radio" name="answerSelection" value="Blue" /><span id="answerBlue">Mavi (9)</span>
+            <input type="radio" name="answerSelection" value="3" /><span style="padding-left: 10px;">3</span>
+          </td>
+          <td onclick="answer(4)">
+            <input type="radio" name="answerSelection" value="4" /><span style="padding-left: 10px;">4</span>
+          </td>
+          <td onclick="answer(5)">
+            <input type="radio" name="answerSelection" value="5" /><span style="padding-left: 10px;">5</span>
+          </td>
+          <td onclick="answer(6)">
+            <input type="radio" name="answerSelection" value="6" /><span style="padding-left: 10px;">6</span>
+          </td>
+          <td onclick="answer(7)">
+            <input type="radio" name="answerSelection" value="7" /><span style="padding-left: 10px;">7</span>
+          </td>
+          <td onclick="answer(8)">
+            <input type="radio" name="answerSelection" value="8" /><span style="padding-left: 10px;">8</span>
+          </td>
+          <td onclick="answer(9)">
+            <input type="radio" name="answerSelection" value="9" /><span style="padding-left: 10px;">9</span>
           </td>
         </tr>
       </table>
     </div>
     <div>
-      <a id="downloadlink" style="display: none"><span id="download">İndir</span></a>
-    </div>
-
-    <div>
-      <button type="button" onclick="listFolders('stroop')" class="btn btn-info btn-sm" data-toggle="modal" data-target="#modalSelectRecord">Dropbox</button>
+      <button type="button" onclick="listFolders('sdmt')" class="btn btn-info btn-sm" data-toggle="modal" data-target="#modalSelectRecord">Dropbox</button>
       <input id="dropboxFile" type="text" placeholder="Dropbox id"/>
-      <button id="btnLoadRecords" onclick="loadFromDropbox('stroop')">Yükle</button>
+      <button id="btnLoadRecords" onclick="loadFromDropbox('sdmt')">Yükle</button>
     </div>
 
     <div id="edaChartContainer" style="height: 300px; width: 100%;"></div>
     <div id="ecgChartContainer" style="height: 300px; width: 100%;"></div>
 
-    <div id="accChartContainer" style="height: 300px; width: 100%;"></div>
-    <div id="hrChartContainer" style="height: 300px; width: 100%;"></div>
-    <div id="temperatureChartContainer" style="height: 300px; width: 100%;"></div>
     <div id="adjustTimeMode" style="display: none">
       <span id="adjust_Time_Mode">Zaman Ayarlama Modu :</span><input id="adjustTimeModeOn" type="radio"
         name="adjustTimeMode" /><span id="adjust_Time_Mode_On">Açık</span>
@@ -145,9 +150,13 @@
           switch (code) {
             case 49: answer(1); break; //1 key
             case 50: answer(2); break; //2 key
-            case 56: answer(4); break; //8 key
-            case 57: answer(3); break; //9 key
-
+            case 51: answer(3); break; //3 key
+            case 52: answer(4); break; //4 key
+            case 53: answer(5); break; //5 key
+            case 54: answer(6); break; //6 key
+            case 55: answer(7); break; //7 key
+            case 56: answer(8); break; //8 key
+            case 57: answer(9); break; //9 key
             default: // Do nothing
           }
         } else {
@@ -193,8 +202,8 @@
       }
 
       var imageSequence = [];
-      var allStroopImages = [];
-      var stroopImageIndex = 0;
+      var allSdmtImages = [];
+      var sdmtImageIndex = 0;
       var numberOfImages = 20;
       var restTimer = null;
       var imagesShownTimeList = [];
@@ -205,12 +214,13 @@
       var increment, accIncrement, hrIncrement;
       var lastImageShownTime = null;
       var testStartDate = null;
-      var isColorSelected = true;
-      var typeOfRecord = 'color';
       var image = document.getElementById("testImage");
+      var askedImage = document.getElementById("askedImage");
+      var ongoingTest = document.getElementById("ongoingTest");
       var isStarted = false;
-      var preRestInterval = 10000; // 10sec rest;
       var isAdjustTimeModeOn = false;
+      var preRestInterval = 10000; // 10sec rest;
+      var preRestIntervalOfRecord;
       var graphData = [];
       var durationsData = [];
       var edaData = accData = hrData = temperatureData = [];
@@ -218,7 +228,7 @@
       var currentEdaChart;
       var analyzeTable = [];
 
-      function onStroopImageCountChanged() {
+      function onSdmtImageCountChanged() {
         numberOfImages = document.getElementById("imageCount").value;
         generateImageSequence().then(value => {
           imageSequence = value;
@@ -226,20 +236,16 @@
         });
       }
 
-      function isCorrect(answer, isColor, code) {
-        return isColor ? Math.floor(code / 10) === answer : code % 10 === answer;
-      }
-
       // To be changed with onselection
       function answer(selection) {
-        const stroopImagePath = imageSequence[stroopImageIndex];
-        const imageCode = +(stroopImagePath.substr(stroopImagePath.indexOf('.png') - 2, 2));
+        const sdmtImagePath = imageSequence[sdmtImageIndex];
+        const imageCode = +(sdmtImagePath.substr(sdmtImagePath.indexOf('.png') - 1, 1));
 
-        const correctness = isCorrect(selection, isColorSelected, imageCode)
+        const correctness = imageCode == selection;
 
-        imagesShownTimeList.push({ imageFile: image.src.substr(image.src.indexOf("resource")), date: lastImageShownTime, dateAnswered: Date.now(), correct: correctness });
+        imagesShownTimeList.push({ imageFile: askedImage.src.substr(askedImage.src.indexOf("resource")), date: lastImageShownTime, dateAnswered: Date.now(), correct: correctness });
 
-        if (++stroopImageIndex < imageSequence.length) {
+        if (++sdmtImageIndex < imageSequence.length) {
           setImage();
         } else {
           stopTest(false);
@@ -247,14 +253,14 @@
       }
 
       function setImage() {
-        image.src = imageSequence[stroopImageIndex];
+        askedImage.src = imageSequence[sdmtImageIndex];
         lastImageShownTime = Date.now();
       }
 
       async function generateImageSequence() {
         var generatedImageSequence = [];
 
-        var allImagesCount = allStroopImages.length;
+        var allImagesCount = allSdmtImages.length;
 
         var lastImageIndexes = [];
 
@@ -269,23 +275,23 @@
               break;
             }
           }
-          generatedImageSequence.push(allStroopImages[randomImageIndex]);
+          generatedImageSequence.push(allSdmtImages[randomImageIndex]);
         }
 
         return generatedImageSequence;
       }
 
       function getImages() {
-        return $.getJSON('/stroop-images');
+        return $.getJSON('/sdmt-images');
       }
 
       async function loadImages() {
-        allStroopImages = await getImages();
+        allSdmtImages = await getImages();
 
         var allImages = [];
-        for (var i = 0; i < allStroopImages.length; i++) {
+        for (var i = 0; i < allSdmtImages.length; i++) {
           allImages[i] = new Image();
-          allImages[i].src = allStroopImages[i];
+          allImages[i].src = allSdmtImages[i];
         }
       }
 
@@ -293,29 +299,13 @@
         if (typeof (Storage) !== "undefined") {
           // Clear local storage
           localStorage.setItem("imagesShownTime", null);
-          localStorage.setItem("stroopImagesShownTime", null);
+          localStorage.setItem("sdmtImagesShownTime", null);
 
         } else {
           image.src = "../resources/images/Sorry.jpg";
           stopTest(true);
         }
       }
-
-      var textFile = null,
-        makeTextFile = function (text) {
-          var data = new Blob([text], { type: 'text/plain' });
-
-          // If we are replacing a previously generated file we need to
-          // manually revoke the object URL to avoid memory leaks.
-          if (textFile !== null) {
-            window.URL.revokeObjectURL(textFile);
-          }
-
-          textFile = window.URL.createObjectURL(data);
-
-          // returns a URL you can use as a href
-          return textFile;
-        };
 
       function startRestTimer() {
         if (restTimer == null) {
@@ -345,23 +335,17 @@
 
       function startTest() {
         isStarted = true;
+        ongoingTest.style.display = "flex";
+        image.style.display = "none";
         initLocalStorage();
         imagesShownTimeList = [];
         document.getElementById("btnStart").disabled = true;
         document.getElementById("btnStop").disabled = false;
 
-        isColorSelected = document.getElementById("radioColor").checked;
-        typeOfRecord = isColorSelected ? 'color' : 'word';
-        console.log("Type of test :" + typeOfRecord);
-        document.getElementById("radioColor").disabled = true;
-        document.getElementById("radioWord").disabled = true;
-
         document.getElementById("selectionBar").style.display = "block";
 
-        document.getElementById('downloadlink').style.display = "none";
         // Show first image
-        stroopImageIndex = 0;
-
+        sdmtImageIndex = 0;
         setImage();
       }
 
@@ -371,23 +355,23 @@
         restTimer && clearInterval(restTimer);
         restTimer = null;
 
+        ongoingTest.style.display = "none";
+        image.style.display = "block";
+
         console.log("Test finished!");
         document.getElementById("btnStart").disabled = false;
         document.getElementById("btnStop").disabled = true;
 
-        document.getElementById("radioColor").disabled = false;
-        document.getElementById("radioWord").disabled = false;
-
         document.getElementById("selectionBar").style.display = "none";
 
         if (isStoppedManually) {
-          image.src = "../resources/images/StroopTesti.png";
+          image.src = "../resources/images/sdmtTest.png";
           initLocalStorage();
         } else {
           image.src = "../resources/images/TestFinished.png";
           // Update local storage
           var strImagesShownTime = JSON.stringify(imagesShownTimeList);
-          localStorage.setItem("stroopImagesShownTime", strImagesShownTime);
+          localStorage.setItem("sdmtImagesShownTime", strImagesShownTime);
 
           var parsableList = '{"times":' + strImagesShownTime + '}';
           //console.log(parsableList);
@@ -399,12 +383,11 @@
           const metadataFileContent = {
             age,
             gender,
-            typeOfRecord,
             imagesShownTimeList
           };
 
           if(lastDropboxFileId) {
-            fetch(`/records/stroop/${lastDropboxFileId}/metadata`, {
+            fetch(`/records/sdmt/${lastDropboxFileId}/metadata`, {
               method: 'POST',
               body: JSON.stringify(metadataFileContent),
               headers: {
@@ -414,13 +397,13 @@
               if(res.ok) {
                 console.log('Uploaded metadata file successfully!');
               } else {
-                console.error('Stroop test metadata file could not be saved! Dropbox id:' + lastDropboxFileId);
+                console.error('SDMT metadata file could not be saved! Dropbox id:' + lastDropboxFileId);
               }
             });
           }
 
         }
-        stroopImageIndex = 0;
+        sdmtImageIndex = 0;
       }
 
       function init() {
@@ -755,6 +738,44 @@
         chart.render();
       }
 
+      function drawEcgGraphics(splitted, initTime, frequency, chartSelection) {
+        var contentsAsDataPoint = [];
+        // Increment in ms
+        increment = (1 / frequency);
+
+        for (var i = 2, time = initTime; i < splitted.length; i++ , time += increment) {
+          //contentsAsDataPoint.push({ x: time,  y: parseFloat(splitted[i]) } );
+          contentsAsDataPoint.push({ y: parseFloat(splitted[i]) });
+        }
+
+        graphData = [
+          {
+            showInLegend: false,
+            click: onClick,
+            type: "line",
+            dataPoints: contentsAsDataPoint
+          }
+        ];
+
+        // Chart
+        var chart = new CanvasJS.Chart(chartSelection, {
+          zoomEnabled: true,
+          panEnabled: true,
+          legend: {
+            horizontalAlign: "right",
+            verticalAlign: "center"
+          },
+          axisY: {
+            includeZero: false
+          },
+          title: {
+            text: "ECG"
+          },
+          data: graphData
+        });
+        chart.render();
+      }
+
       function myTrim(x) {
         return x.replace(/^\s+|\s+$/gm, '');
       }
@@ -922,17 +943,18 @@
           for (var i = 0; i < imagesShownTimeList.times.length; i++) {
 
             if (parseInt(imagesShownTimeList.times[i].dateImageShown) >= timeOfPointInMs) {
-              image.src = JSON.stringify(imagesShownTimeList.times[i].imageFile).split('"').join('');
+              askedImage.src = JSON.stringify(imagesShownTimeList.times[i].imageFile).split('"').join('');
               break;
             }
           }
         } else {
-          image.src = "../resources/images/imageNotFound.png";
+          askedImage.src = "../resources/images/imageNotFound.png";
         }
       }
 
     </script>
   </div>
+
 </body>
 
 </html>

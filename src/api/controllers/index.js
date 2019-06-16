@@ -4,7 +4,7 @@ var Dropbox = require('dropbox').Dropbox;
 
 import { analysisDataCache } from '../../index';
 
-import { listImages, listStroopImages } from '../../images';
+import { listImages, listStroopImages, listSdmtImages } from '../../images';
 
 const accessToken = process.env.DROPBOX_ACCESS_TOKEN;
 
@@ -134,6 +134,10 @@ export const listImagePaths = (req, res) => {
 
 export const listStroopImagePaths = (req, res) => {
   res.json(listStroopImages());
+}
+
+export const listSdmtImagePaths = (req, res) => {
+  res.json(listSdmtImages());
 }
 
 async function downloadFile(test, id, filename) {

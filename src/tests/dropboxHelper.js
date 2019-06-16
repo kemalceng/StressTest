@@ -12,7 +12,7 @@ function loadFromDropbox(test) {
             console.log("Pre rest (ms): " + preRestIntervalOfRecord)
 
 
-            if(test === 'image') {
+            if(test === 'image' || test === 'vr_image') {
                 intervalOfRecord = jsonContent.interval;
                 console.log("Interval: " + intervalOfRecord);
             }

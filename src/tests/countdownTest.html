@@ -163,7 +163,7 @@
     var increment, accIncrement;
     var testStartDate = 0;
     var testInterval = 1000; //45sec
-    var restInterval = 1000; //90sec
+    var preRestInterval = 10000; //10sec
     var answerSubstractInterval = 1000;
     var answerMultiplyInterval = 1000;
     var noiseInterval = 3000;
@@ -186,7 +186,9 @@
 
         image.src = "../resources/images/rest.jpg";
 
-        restTimer = setInterval(haveRest, restInterval);
+        preRestInterval = localStorage.getItem("preRestInterval") || preRestInterval;
+
+        restTimer = setInterval(haveRest, preRestInterval);
 
         return restTimer;
       }
@@ -223,7 +225,7 @@
       if (restTimer == null) {
         testInterval = document.getElementById("testInterval").value;
 
-        restInterval = document.getElementById("restInterval").value;
+        preRestInterval = document.getElementById("restInterval").value;
 
         answerSubstractInterval = document.getElementById("answerSubstractInterval").value;
 
@@ -380,7 +382,7 @@
       checkForFileApiSupport();
 
       document.getElementById("testInterval").value = testInterval;
-      document.getElementById("restInterval").value = restInterval;
+      document.getElementById("restInterval").value = preRestInterval;
 
       document.getElementById("answerSubstractInterval").value = answerSubstractInterval;
       document.getElementById("answerMultiplyInterval").value = answerMultiplyInterval;
