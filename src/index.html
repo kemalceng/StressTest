@@ -9,54 +9,50 @@
 </head>
 
 <body>
-	<div style="display:flex; flex-direction:column; align-items:center; margin: 30px">
-		<table style="text-align: center">
-			<tr>
-				<td>
+	<div style="display:flex; flex-direction:column; margin: 30px">
+		<div style="display:flex; flex-direction: row; justify-content:space-between">
+			<div style="display:flex; flex-direction:column; align-items: center">
+				<div>
 					<a id="imageTestLink" href="tests/imageTest.html" onclick="setUserInfo()">
 						<img src="resources/images/imageTest.jpg" alt="Image Test" style="width:200px;height:200px;border:0">
 					</a>
-				</td>
-				<td>
+				</div>
+				<span id="image_test">Resim Testi</span>
+			</div>
+			<div style="display:flex; flex-direction:column; align-items: center">
+				<div>
 					<a id="stroopTestLink" href="tests/stroopTest.html" onclick="setUserInfo()">
 						<img src="resources/images/stroopTest.jpg" alt="Stroop Test" style="width:200px;height:200px;border:0">
 					</a>
-				</td>
-<!--				<td>-->
-<!--					<a id="countdownTestLink" href="tests/countdownTest.html" onclick="setUserInfo()">-->
-<!--						<img src="resources/images/countdown.jpg" alt="Countdown Test" style="width:200px;height:200px;border:0">-->
-<!--					</a>-->
-<!--				</td>-->
-				<td>
+				</div>
+				<span id="stroop_test">Stroop Testi</span>
+			</div>
+			<div style="display:flex; flex-direction:column; align-items: center">
+				<div>
 					<a id="sdmtTestLink" href="tests/sdmtTest.html" onclick="setUserInfo()">
 						<img src="resources/images/sdmtTest.png" alt="SDMT Test" style="width:200px;height:200px;border:0">
 					</a>
-				</td>
-				<td>
+				</div>
+				<span id=sdmt_test">SDMT</span>
+			</div>
+			<div style="display:flex; flex-direction:column; align-items: center">
+				<div>
 					<a id="vrImageTestLink" href="tests/vrImageTest.html" onclick="setUserInfo()">
 						<img src="resources/images/vr_glasses.jpg" alt="VR Image Test" style="width:200px;height:200px;border:0">
 					</a>
-				</td>
-			</tr>
-			<tr>
-				<td id="image_test">
-					Resim Testi
-				</td>
-				<td id="stroop_test">
-					Stroop Testi
-				</td>
-<!--				<td id="countdown_test">-->
-<!--					Geri Sayım Testi-->
-<!--				</td>-->
-				<td id=sdmt_test">
-					SDMT
-				</td>
-				<td id="vr_image_test">
-					Sanal Gerçeklik Resim Testi
-				</td>
+				</div>
+				<span id="vr_image_test">Sanal Gerçeklik Resim Testi</span>
+			</div>
 
-			</tr>
-		</table>
+<!--				<div style="display:flex; flex-direction:column; align-items: center">-->
+<!--					<div>-->
+<!--						<a id="countdownTestLink" href="tests/countdownTest.html" onclick="setUserInfo()">-->
+<!--							<img src="resources/images/countdown.jpg" alt="Countdown Test" style="width:200px;height:200px;border:0">-->
+<!--						</a>-->
+<!--					</div>-->
+<!--					<span id="countdown_test">Geri Sayım Testi</span>-->
+<!--				</div>-->
+		</div>
 
 		<div style="align-self: flex-start; margin-top: 30px">
 			<button type="button" class="btn btn-info"  data-toggle="collapse" data-target="#settings">

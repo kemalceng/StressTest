@@ -45,8 +45,8 @@
     <div>
       <span id="lblCount">Adet: </span><input id="imageCount" type="number" style="width: 50px" onchange="onSdmtImageCountChanged()"/>
 
-      <button id="btnStart" onclick="startRestTimer()" ondblclick="a = 1">Teste başla</button>
-      <button id="btnStop" onclick="stopTest(true)" disabled=true>Durdur</button>
+      <button id="btnStart" class="btn btn-primary btn-sm" onclick="startRestTimer()">Teste başla</button>
+      <button id="btnStop" class="btn btn-danger btn-sm" onclick="stopTest(true)" disabled>Durdur</button>
       <span id="lblClientId">Kullanıcı ID: </span><output id="wsId"></output>
     </div>
     <div>
@@ -340,6 +340,9 @@
       }
 
       function startRestTimer() {
+        document.getElementById("btnStart").disabled = true;
+        document.getElementById("btnStop").disabled = false;
+
         if (restTimer == null) {
           image.src = "../resources/images/rest.jpg";
 
@@ -372,8 +375,6 @@
         image.style.display = "none";
         initLocalStorage();
         imagesShownTimeList = [];
-        document.getElementById("btnStart").disabled = true;
-        document.getElementById("btnStop").disabled = false;
 
         document.getElementById("selectionBar").style.display = "block";
         document.getElementById("sumAnswerBar").style.display = "none";
