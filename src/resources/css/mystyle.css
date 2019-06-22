@@ -88,6 +88,14 @@ div#selectionBar {
   height: 25px;
 }
 
+div#sumAnswerBar {
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  max-width: 800px;
+  height: 25px;
+}
+
 div#highlight {
   border: 1px solid #666;
   font-size: 1.2em;

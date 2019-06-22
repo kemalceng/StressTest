@@ -62,7 +62,10 @@
       <div id="ongoingTest" style="flex-direction:column; align-items:center; display: none;">
         <img src="../resources/images/sdmt.png" style="height: 200px"/>
         <div style="width: 800px;height: 365px;display: flex;align-items: center;flex-direction: column;justify-content: center;">
-          <img id="askedImage" style="max-height: 365px"/>
+          <div>
+              <img id="operationImage" src="../resources/images/plus.png" style="max-height: 365px; display: none; margin-right: 30px"/>
+              <img id="askedImage" style="max-height: 365px"/>
+          </div>
         </div>
       </div>
       <img id="testImage" src="../resources/images/sdmtTest.png" style="width:800px;height:600px"/>
@@ -99,6 +102,9 @@
           </td>
         </tr>
       </table>
+    </div>
+    <div id="sumAnswerBar" style="display: none">
+      <span id="lblSum">Toplam: </span><input id="sumAnswer" type="number" style="width: 50px"/>
     </div>
     <div>
       <button type="button" onclick="listFolders('sdmt')" class="btn btn-info btn-sm" data-toggle="modal" data-target="#modalSelectRecord">Dropbox</button>
@@ -144,27 +150,31 @@
       var deltaInMs = 250;
 
       function keyPress(e) {
-        var code = e.keyCode;
+        var code = e.key;
 
-        if (isStarted) {
+        if(isCalculationTestStarted && code === 'Enter') {
+          answer(sumAnswerInput.value);
+          sumAnswerInput.value = '';
+          sumAnswerInput.focus();
+        } else if (isStarted && !isCalculationTestStarted) {
           switch (code) {
-            case 49: answer(1); break; //1 key
-            case 50: answer(2); break; //2 key
-            case 51: answer(3); break; //3 key
-            case 52: answer(4); break; //4 key
-            case 53: answer(5); break; //5 key
-            case 54: answer(6); break; //6 key
-            case 55: answer(7); break; //7 key
-            case 56: answer(8); break; //8 key
-            case 57: answer(9); break; //9 key
+            case '1': answer(1); break; //1 key
+            case '2': answer(2); break; //2 key
+            case '3': answer(3); break; //3 key
+            case '4': answer(4); break; //4 key
+            case '5': answer(5); break; //5 key
+            case '6': answer(6); break; //6 key
+            case '7': answer(7); break; //7 key
+            case '8': answer(8); break; //8 key
+            case '9': answer(9); break; //9 key
             default: // Do nothing
           }
         } else {
           switch (code) {
             // + key
-            case 187: adjustmentInMs += deltaInMs; console.log("Adjustment: " + adjustmentInMs); break;
-            // - key
-            case 189: adjustmentInMs -= deltaInMs; console.log("Adjustment: " + adjustmentInMs); break;
+            case '+': adjustmentInMs += deltaInMs; console.log("Adjustment: " + adjustmentInMs); break;
+            // * key
+            case '*': adjustmentInMs -= deltaInMs; console.log("Adjustment: " + adjustmentInMs); break;
           }
         }
       }
@@ -217,7 +227,11 @@
       var image = document.getElementById("testImage");
       var askedImage = document.getElementById("askedImage");
       var ongoingTest = document.getElementById("ongoingTest");
+      var operationImage = document.getElementById("operationImage");
+      var sumAnswerInput = document.getElementById("sumAnswer");
       var isStarted = false;
+      var isCalculationTestStarted = false;
+      var calculationTestTotalValue = 0;
       var isAdjustTimeModeOn = false;
       var preRestInterval = 10000; // 10sec rest;
       var preRestIntervalOfRecord;
@@ -227,6 +241,7 @@
       var edaDataLength = accDataLength = hrDataLength = temperatureDataLength = 0;
       var currentEdaChart;
       var analyzeTable = [];
+
 
       function onSdmtImageCountChanged() {
         numberOfImages = document.getElementById("imageCount").value;
@@ -240,12 +255,27 @@
       function answer(selection) {
         const sdmtImagePath = imageSequence[sdmtImageIndex];
         const imageCode = +(sdmtImagePath.substr(sdmtImagePath.indexOf('.png') - 1, 1));
+        const correctness = !isCalculationTestStarted ? +selection === imageCode
+                : +selection === (imageCode + calculationTestTotalValue);
 
-        const correctness = imageCode == selection;
+        if(isCalculationTestStarted) {
+          calculationTestTotalValue = correctness ? +selection : 0;
+        }
 
         imagesShownTimeList.push({ imageFile: askedImage.src.substr(askedImage.src.indexOf("resource")), date: lastImageShownTime, dateAnswered: Date.now(), correct: correctness });
 
         if (++sdmtImageIndex < imageSequence.length) {
+          setImage();
+        } else if(!isCalculationTestStarted) {
+          document.getElementById("sumAnswerBar").style.display = "flex";
+          document.getElementById("selectionBar").style.display = "none";
+
+          sumAnswerInput.focus();
+          sumAnswerInput.value = '';
+          isCalculationTestStarted = true;
+          sdmtImageIndex = 0;
+          calculationTestTotalValue = correctness ? +selection : 0;
+
           setImage();
         } else {
           stopTest(false);
@@ -253,6 +283,8 @@
       }
 
       function setImage() {
+        operationImage.style.display = (isCalculationTestStarted && calculationTestTotalValue > 0) ? "inline" : "none";
+
         askedImage.src = imageSequence[sdmtImageIndex];
         lastImageShownTime = Date.now();
       }
@@ -335,6 +367,7 @@
 
       function startTest() {
         isStarted = true;
+        isCalculationTestStarted = false;
         ongoingTest.style.display = "flex";
         image.style.display = "none";
         initLocalStorage();
@@ -343,6 +376,7 @@
         document.getElementById("btnStop").disabled = false;
 
         document.getElementById("selectionBar").style.display = "block";
+        document.getElementById("sumAnswerBar").style.display = "none";
 
         // Show first image
         sdmtImageIndex = 0;
@@ -351,6 +385,7 @@
 
       function stopTest(isStoppedManually) {
         isStarted = false;
+        isCalculationTestStarted = false;
 
         restTimer && clearInterval(restTimer);
         restTimer = null;
@@ -363,6 +398,7 @@
         document.getElementById("btnStop").disabled = true;
 
         document.getElementById("selectionBar").style.display = "none";
+        document.getElementById("sumAnswerBar").style.display = "none";
 
         if (isStoppedManually) {
           image.src = "../resources/images/sdmtTest.png";
