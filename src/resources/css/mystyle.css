@@ -72,9 +72,12 @@ table {
 
 td {
   padding: 0 15px 0 15px;
+  text-align: center;
 }
 
-
+tr {
+  min-height: 20px;
+}
 div#container {
   margin: 0 auto 0 auto;
   width:800px;
@@ -105,6 +108,10 @@ div#highlight {
 
 div#links {
   padding: 0.5em 0 0 0;
+}
+
+.my-row{
+  margin-bottom: 10px;
 }
 
 h1 {

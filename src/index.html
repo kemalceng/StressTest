@@ -3,49 +3,14 @@
 
 <head>
 	<meta charset='utf-8'>
-	<style>
-		td {
-			text-align: center;
-		}
-
-		tr {
-			height: 20px;
-		}
-	</style>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
 </head>
 
 <body>
-	<div align="center">
-		<div
-			style="background-image: url('resources/images/flag_tr.png'); width: 32px; height: 32px; background-size: cover; display:inline-block;"
-			onclick="setLang('tr')"></div>
-		<div
-			style="background-image: url('resources/images/flag_uk.png'); width: 32px; height: 32px; background-size: cover; display:inline-block;"
-			onclick="setLang('en')"></div>
-		<table>
-			<tr>
-				<td id="age">
-					Yaş
-				</td>
-				<td>
-					<input type="number" name="age" id="userAge" min="1" max="100" value="25" />
-				</td>
-			</tr>
-			<tr>
-				<td id="sex">
-					Cinsiyet
-				</td>
-				<td>
-					<input type="radio" name="gender" id="genderMale" value="male" checked /> <span id="male"> Erkek</span> <br>
-				</td>
-				<td>
-					<input type="radio" name="gender" value="female" /> <span id="female"> Kadın</span> <br>
-				</td>
-			</tr>
-			<tr />
-		</table>
-
-		<table>
+	<div style="display:flex; flex-direction:column; align-items:center; margin: 30px">
+		<table style="text-align: center">
 			<tr>
 				<td>
 					<a id="imageTestLink" href="tests/imageTest.html" onclick="setUserInfo()">
@@ -84,7 +49,7 @@
 <!--					Geri Sayım Testi-->
 <!--				</td>-->
 				<td id=sdmt_test">
-					SDMT Testi
+					SDMT
 				</td>
 				<td id="vr_image_test">
 					Sanal Gerçeklik Resim Testi
@@ -92,6 +57,37 @@
 
 			</tr>
 		</table>
+
+		<div style="align-self: flex-start; margin-top: 30px">
+			<button type="button" class="btn btn-info"  data-toggle="collapse" data-target="#settings">
+				<span class="glyphicon glyphicon-cog"></span>
+			</button>
+			<!-- Settings -->
+			<div id="settings" class="collapse" style="margin-top: 10px">
+				<div style="display:flex; flex-direction: column; align-items: flex-start">
+					<div class="my-row">
+						<div style="background-image: url('resources/images/flag_tr.png'); width: 32px; height: 32px; background-size: cover; display:inline-block;"
+							 onclick="setLang('tr')"></div>
+						<div style="background-image: url('resources/images/flag_uk.png'); width: 32px; height: 32px; background-size: cover; display:inline-block;"
+							 onclick="setLang('en')"></div>
+					</div>
+					<div class="my-row">
+						<span id="age" style="margin-right: 10px">Yaş</span>
+						<input type="number" name="age" id="userAge" min="1" max="100" value="25" />
+					</div>
+					<div class="my-row">
+						<span id="sex" style="margin-right: 10px">Cinsiyet</span>
+						<input type="radio" name="gender" id="genderMale" value="male" checked /> <span id="male"> Erkek</span>
+						<input type="radio" name="gender" value="female"/> <span id="female"> Kadın</span> <br>
+					</div>
+					<div class="my-row">
+						<span id="lblPreRestInterval" style="margin-right: 10px">Dinlenme Süresi (ms)</span>
+						<input type="number" name="preRestIntervalSetting" id="preRestIntervalSetting" min="0" max="180000" value="10000" />
+					</div>
+
+				</div>
+			</div>
+		</div>
 	</div>
 
 
@@ -106,6 +102,9 @@
 
 			var gender = (document.getElementById("genderMale").checked) ? "M" : "F";
 			localStorage.setItem("userGender", gender);
+
+			var preRestIntervalSetting = document.getElementById("preRestIntervalSetting").value;
+			localStorage.setItem("preRestInterval", preRestIntervalSetting);
 		}
 	</script>
 </body>

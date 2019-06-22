@@ -7,11 +7,11 @@
   <meta charset='utf-8'>
   <title>Resim Testi</title>
   <link rel="stylesheet" href="../resources/css/mystyle.css">
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <script src="/socket.io/socket.io.js"></script>
 </head>
 
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-<script src="/socket.io/socket.io.js"></script>
 <script>
   var lastDropboxFileId;
 
@@ -40,7 +40,6 @@
 
 <body>
   <div id="container">
-
     <div>
       <span id="lblInterval">Aralık: </span><input id="interval" type="number" class=".form-control-sm">ms</input>
       <span id="lblCount">Adet: </span><input id="imageCount" type="number" class=".form-control-sm" onchange="onImageCountChanged()"/>
@@ -92,7 +91,7 @@
         <!-- Modal content-->
         <div class="modal-content">
           <div class="modal-header">
-            <h4 class="modal-title">Select Record</h4>
+            <h4 class="modal-title" id="lblSelectRecord">Kayıt Seçiniz</h4>
             <button type="button" class="close" data-dismiss="modal">&times;</button>
           </div>
           <div id="recordListInModal" class="modal-body"/>
