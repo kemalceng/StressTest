@@ -29,15 +29,16 @@
   },
   "homepage": "https://github.com/kemalceng/StressTest#readme",
   "dependencies": {
+    "@babel/helpers": "^7.4.3",
     "@babel/polyfill": "^7.4.3",
+    "@babel/runtime": "^7.4.3",
     "body-parser": "^1.18.3",
     "dropbox": "^4.0.17",
     "express": "^4.16.4",
+    "formidable": "^1.2.1",
     "isomorphic-fetch": "^2.2.1",
     "socket.io": "^2.2.0",
-    "uuid": "^3.3.2",
-    "@babel/helpers": "^7.4.3",
-    "@babel/runtime": "^7.4.3"
+    "uuid": "^3.3.2"
   },
   "devDependencies": {
     "@babel/cli": "^7.2.3",

@@ -1,4 +1,4 @@
-import { createAnalysis, listAnalyses, getAnalysis, updateAnalysis, uploadMetadataFile, stopAnalysis, listImagePaths, listStroopImagePaths, listSdmtImagePaths} from '../controllers';
+import { createAnalysis, listAnalyses, getAnalysis, updateAnalysis, uploadMetadataFile, uploadVideo, stopAnalysis, listImagePaths, listStroopImagePaths, listSdmtImagePaths} from '../controllers';
 
 export default function (app) {
   app.route('/records/:test')
@@ -12,6 +12,9 @@ export default function (app) {
 
   app.route('/records/:test/:recordId/metadata')
     .post(uploadMetadataFile)
+
+  app.route('/records/:test/:recordId/video')
+      .post(uploadVideo)
 
   app.route('/records/:test/:recordId')
     .get(getAnalysis);

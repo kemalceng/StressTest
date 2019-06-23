@@ -38,7 +38,7 @@ var chunks = [];
 var count = 0;
 
 function startRecording(stream) {
-	log('Start recording...');
+	console.log('Start recording...');
 	if (typeof MediaRecorder.isTypeSupported == 'function'){
 		/*
 			MediaRecorder.isTypeSupported is a function announced in https://developers.google.com/web/updates/2016/01/mediarecorder and later introduced in the MediaRecorder API spec http://www.w3.org/TR/mediastream-recording/
@@ -50,10 +50,10 @@ function startRecording(stream) {
 		} else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp8')) {
 		  var options = {mimeType: 'video/webm;codecs=vp8'};
 		}
-		log('Using '+options.mimeType);
+		console.log('Using '+options.mimeType);
 		mediaRecorder = new MediaRecorder(stream, options);
 	}else{
-		log('Using default codecs for browser');
+		console.log('Using default codecs for browser');
 		mediaRecorder = new MediaRecorder(stream);
 	}
 
@@ -66,7 +66,7 @@ function startRecording(stream) {
 	videoElement.play();
 
 	mediaRecorder.ondataavailable = function(e) {
-		//log('Data available...');
+		//console.log('Data available...');
 		//console.log(e.data);
 		//console.log(e.data.type);
 		//console.log(e);
@@ -74,50 +74,67 @@ function startRecording(stream) {
 	};
 
 	mediaRecorder.onerror = function(e){
-		log('Error: ' + e);
 		console.log('Error: ', e);
 	};
 
 
-	mediaRecorder.onstart = function(){
-		log('Started & state = ' + mediaRecorder.state);
-		startTimer();
+	mediaRecorder.onstart = function() {
+		console.log('Started & state = ' + mediaRecorder.state);
 	};
 
 	mediaRecorder.onstop = function(){
-		log('Stopped & state = ' + mediaRecorder.state);
+		console.log('Stopped & state = ' + mediaRecorder.state);
 
 		var blob = new Blob(chunks, {type: "video/webm"});
-		chunks = [];
+
+		lastDropboxFileId = "1234567";
+		if(lastDropboxFileId) {
+			var formData = new FormData();
+			formData.append('blob', blob, 'video.webm');
+
+			fetch(`/records/sdmt/${lastDropboxFileId}/video`, {
+				method: 'POST',
+				body: formData
+			}).then(res => {
+				if (res.ok) {
+					console.log('Uploaded video successfully!');
+				} else {
+					console.error('SDMT video could not be saved! Dropbox id:' + lastDropboxFileId);
+				}
+			});
+		}
 
 		var videoURL = window.URL.createObjectURL(blob);
 
-		downloadLink.href = videoURL;
 		videoElement.srcObject = null;
-
 		videoElement.src = videoURL;
 
 		// downloadLink.innerHTML = 'Download video file';
 
-		var name  = testStartDate + "_video" +".webm" ;
+		var name  = (lastDropboxFileId || testStartDate) +".webm" ;
 
-		downloadLink.setAttribute( "download", name);
-		downloadLink.setAttribute( "name", name);
-		
+		if(downloadLink) {
+			downloadLink.href = videoURL;
+			downloadLink.setAttribute("download", name);
+			downloadLink.setAttribute("name", name);
+		}
+
 		mediaRecorder.stream.getTracks() // get all tracks from the MediaStream
 			.forEach( track => track.stop() ); // stop each of them
+
+		chunks = [];
 	};
 
 	mediaRecorder.onpause = function(){
-		log('Paused & state = ' + mediaRecorder.state);
+		console.log('Paused & state = ' + mediaRecorder.state);
 	}
 
 	mediaRecorder.onresume = function(){
-		log('Resumed  & state = ' + mediaRecorder.state);
+		console.log('Resumed  & state = ' + mediaRecorder.state);
 	}
 
 	mediaRecorder.onwarning = function(e){
-		log('Warning: ' + e);
+		console.log('Warning: ' + e);
 	};
 }
 

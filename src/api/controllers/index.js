@@ -1,6 +1,9 @@
 import uuidv4 from 'uuid/v4';
-var fetch = require('isomorphic-fetch');
-var Dropbox = require('dropbox').Dropbox;
+const fetch = require('isomorphic-fetch');
+const Dropbox = require('dropbox').Dropbox;
+const formidable = require('formidable');
+const util = require('util');
+const fs = require('fs');
 
 import { analysisDataCache } from '../../index';
 
@@ -71,6 +74,41 @@ export const uploadMetadataFile = (req, res, next) => {
         console.error(err);
         next(err);
       });
+}
+
+export const uploadVideo = (req, res, next) => {
+  const id = req.params.recordId;
+  const test = req.params.test;
+
+  var form = new formidable.IncomingForm();
+  form.keepExtensions = true;
+
+  form.on('file', function(name, file) {
+    console.log("Uploading file to dropbox: ", file);
+
+    fs.readFile(file.path, (err, data) => {
+      if (err) {
+        console.error(err);
+        console.error(`Could not upload video to Dropbox: /${test}/${id}, file: ${file.path}`);
+        return;
+      }
+
+      uploadFile(test, id, file.name, data)
+          .then(() => console.log(`Successfully uploaded video to Dropbox: /${test}/${id}`))
+          .catch(err => {
+            console.error(err);
+            console.error(`Could not upload video to Dropbox: /${test}/${id}, file: ${file.path}`);
+          });
+    });
+  });
+
+  form.parse(req, function(err, fields, files) {
+    if (err) {
+      next(err);
+      throw err;
+    }
+    res.send(null);
+  });
 }
 
 export const updateAnalysis = (req, res) => {
@@ -154,8 +192,8 @@ async function downloadFile(test, id, filename) {
 async function uploadFile(test, id, filename, contents) {
   const path = `/${test}/${id}/${filename}`;
   const response = await dbx.filesUpload({
-    contents,
-    path
+    path,
+    contents
   });
 
   console.log("upload completed: ", response);

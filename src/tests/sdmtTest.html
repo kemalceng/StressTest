@@ -115,6 +115,11 @@
     <div id="edaChartContainer" style="height: 300px; width: 100%;"></div>
     <div id="ecgChartContainer" style="height: 300px; width: 100%;"></div>
 
+    <!-- Video -->
+    <div>
+      <video autoplay controls style="display: none"></video>
+    </div>
+
     <div id="adjustTimeMode" style="display: none">
       <span id="adjust_Time_Mode">Zaman Ayarlama Modu :</span><input id="adjustTimeModeOn" type="radio"
         name="adjustTimeMode" /><span id="adjust_Time_Mode_On">Açık</span>
@@ -124,6 +129,8 @@
 
     <!--Perform translation -->
     <script type="text/javascript" src="../resources/js/translate.js"></script>
+
+    <script src="recorder.js"></script>
 
     <!-- Modal -->
     <div id="modalSelectRecord" class="modal fade" role="dialog">
@@ -348,6 +355,8 @@
 
           preRestInterval = localStorage.getItem("preRestInterval") || preRestInterval;
 
+          onBtnRecordClicked();
+
           restTimer = setInterval(finishRest, preRestInterval);
 
           testStartDate = Date.now();
@@ -439,8 +448,12 @@
             });
           }
 
+          document.querySelector('video').style.display = "block";
         }
+
         sdmtImageIndex = 0;
+
+        onBtnStopClicked();
       }
 
       function init() {
