@@ -236,6 +236,7 @@
       var ongoingTest = document.getElementById("ongoingTest");
       var operationImage = document.getElementById("operationImage");
       var sumAnswerInput = document.getElementById("sumAnswer");
+      var imageCountInput = document.getElementById("imageCount");
       var isStarted = false;
       var isCalculationTestStarted = false;
       var calculationTestTotalValue = 0;
@@ -251,7 +252,7 @@
 
 
       function onSdmtImageCountChanged() {
-        numberOfImages = document.getElementById("imageCount").value;
+        numberOfImages = imageCountInput.value;
         generateImageSequence().then(value => {
           imageSequence = value;
           console.log(imageSequence);
@@ -382,6 +383,8 @@
         isCalculationTestStarted = false;
         ongoingTest.style.display = "flex";
         image.style.display = "none";
+        imageCountInput.disabled = true;
+        
         initLocalStorage();
         imagesShownTimeList = [];
 
@@ -406,6 +409,7 @@
         console.log("Test finished!");
         document.getElementById("btnStart").disabled = false;
         document.getElementById("btnStop").disabled = true;
+        imageCountInput.disabled = false;
 
         document.getElementById("selectionBar").style.display = "none";
         document.getElementById("sumAnswerBar").style.display = "none";
@@ -460,7 +464,7 @@
         initLocalStorage();
         checkForFileApiSupport();
 
-        document.getElementById("imageCount").value = numberOfImages;
+        imageCountInput.value = numberOfImages;
 
         loadImages().then(() => {
           generateImageSequence().then(value => {

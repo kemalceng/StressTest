@@ -87,7 +87,6 @@ function startRecording(stream) {
 
 		var blob = new Blob(chunks, {type: "video/webm"});
 
-		lastDropboxFileId = "1234567";
 		if(lastDropboxFileId) {
 			var formData = new FormData();
 			formData.append('blob', blob, 'video.webm');
