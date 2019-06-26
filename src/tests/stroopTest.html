@@ -203,6 +203,7 @@
       var image = document.getElementById("testImage");
       var isStarted = false;
       var preRestInterval = 10000; // 10sec rest;
+      var preRestIntervalOfRecord;
       var isAdjustTimeModeOn = false;
       var graphData = [];
       var durationsData = [];
@@ -393,6 +394,7 @@
           const metadataFileContent = {
             age,
             gender,
+            preRestInterval,
             typeOfRecord,
             imagesShownTimeList
           };
