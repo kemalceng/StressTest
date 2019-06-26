@@ -3,7 +3,8 @@
 
 <head>
 	<meta charset='utf-8'>
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css"/>
+	<link href="../resources/css/mystyle.css" rel="stylesheet" type="text/css"/>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
 </head>
@@ -80,7 +81,15 @@
 						<span id="lblPreRestInterval" style="margin-right: 10px">Dinlenme Süresi (ms)</span>
 						<input type="number" name="preRestIntervalSetting" id="preRestIntervalSetting" min="0" max="180000" value="10000" />
 					</div>
-
+					<div class="my-row">
+						<span id="lblVrImage" style="margin-right: 10px">VR arkaplanı</span>
+						<select id="vrBackgroundSetting" class="form-control-sm">
+							<option>sky</option>
+							<option>sky-night</option>
+							<option>beach</option>
+							<option>forest</option>
+						</select>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -101,6 +110,9 @@
 
 			var preRestIntervalSetting = document.getElementById("preRestIntervalSetting").value;
 			localStorage.setItem("preRestInterval", preRestIntervalSetting);
+
+			var vrBackground = document.getElementById("vrBackgroundSetting").value;
+			localStorage.setItem("vrBackground", vrBackground);
 		}
 	</script>
 </body>

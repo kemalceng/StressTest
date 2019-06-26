@@ -12,6 +12,7 @@ var dictionary = {
   btnStart: { tr: "Teste Başla", en: "Start Test"},
   btnStop: { tr: "Durdur", en: "Stop"},
   lblInterval: { tr: "Aralık: ", en: "Interval: "},
+  lblVrImage: { tr: "VR arkaplanı", en: "VR background"},
   lblCount: { tr: "Adet: ", en: "Count: "},
   lblSum: { tr: "Toplam: ", en: "Sum: "},
   lblClientId: { tr: "Kullanıcı ID: ", en: "Client ID: "},

@@ -598,18 +598,11 @@
 
   var loader = new THREE.TextureLoader();
 
-  var textures = [
-    '../resources/images/textures/sky.jpg',
-    '../resources/images/textures/sky-night.jpg',
-    '../resources/images/textures/beach.jpg',
-    '../resources/images/textures/forest.png'
-  ]
+  var vrBackgroundSetting = localStorage.getItem('vrBackground') || 'sky';
 
-  var randomIndex = Math.floor(Math.random() * textures.length);
+  const vrBackgroundImagePath = `../resources/images/textures/${vrBackgroundSetting}.jpg`;
 
-  var randomTexture = textures[randomIndex];
-
-  loader.load(randomTexture, onTextureLoaded);
+  loader.load(vrBackgroundImagePath, onTextureLoaded);
   loader.load('../resources/images/rest.jpg', onPicLoaded);
 
   // lights
