@@ -231,7 +231,7 @@
 
         const correctness = isCorrect(selection, isColorSelected, imageCode)
 
-        imagesShownTimeList.push({ imageFile: image.src.substr(image.src.indexOf("resource")), date: lastImageShownTime, dateAnswered: Date.now(), correct: correctness });
+        imagesShownTimeList.push({ imageFile: image.src, date: lastImageShownTime, dateAnswered: Date.now(), correct: correctness });
 
         if (++stroopImageIndex < imageSequence.length) {
           setImage();
@@ -455,7 +455,7 @@
         //console.log("imagesShownTimeList:", imagesShownTimeList);
         var i = edaInitIndex, j = 0, h = hrInitIndex, t = temperatureInitIndex;
         while (i < edaDataLength && j < imagesShownTimeList.times.length) {
-          var diff = imagesShownTimeList.times[j].dateAnswered - imagesShownTimeList.times[j].dateImageShown;
+          var diff = imagesShownTimeList.times[j].dateAnswered - imagesShownTimeList.times[j].date;
 
           var hrDataInInterval = [], temperatureDataInInterval = [], edaDataInInterval = [];
           var count = 0;
@@ -688,7 +688,7 @@
         var contentsAsDataPoint = [];
 
         // Increment in ms
-        increment = (1 / frequency);
+        increment = (1 / frequency) * 1000;
 
         for (var i = 2, time = initTime; i < splitted.length; i++ , time += increment) {
           //contentsAsDataPoint.push({ x: time,  y: parseFloat(splitted[i]) } );
@@ -754,7 +754,7 @@
       function drawEcgGraphics(splitted, initTime, frequency, chartSelection) {
         var contentsAsDataPoint = [];
         // Increment in ms
-        increment = (1 / frequency);
+        increment = (1 / frequency) * 1000;
 
         for (var i = 2, time = initTime; i < splitted.length; i++ , time += increment) {
           //contentsAsDataPoint.push({ x: time,  y: parseFloat(splitted[i]) } );
@@ -924,7 +924,7 @@
       }
 
       function onClick(e) {
-        var timeOfPoint = edaInitTime + (e.dataPoint.x * increment);
+        var timeOfPoint = edaInitTime + (e.dataPoint.x * increment) - preRestIntervalOfRecord;
         setImageAtTime(timeOfPoint);
       }
 
@@ -936,7 +936,7 @@
 
         isAdjustTimeModeOn = document.getElementById("adjustTimeModeOn").checked;
         if (isAdjustTimeModeOn) {
-          adjustmentInMs = parseInt(imagesShownTimeList.times[0].dateImageShown) - (timeOfPoint * 1000);
+          adjustmentInMs = parseInt(imagesShownTimeList.times[0].date) - (timeOfPoint * 1000);
           console.log("Adjustment: " + adjustmentInMs);
 
           prepareDurationsData();
@@ -947,15 +947,15 @@
       }
 
       function setImageAtTime(timeOfPoint) {
-        let timeOfPointInMs = timeOfPoint * 1000;
+        let timeOfPointInMs = timeOfPoint;
         timeOfPointInMs += adjustmentInMs;
 
         console.log("setImageAtTime:" + timeOfPointInMs);
 
-        if (imagesShownTimeList != [] && parseInt(imagesShownTimeList.times[0].dateImageShown) <= timeOfPointInMs) {
+        if (imagesShownTimeList != [] && parseInt(imagesShownTimeList.times[0].date) <= timeOfPointInMs) {
           for (var i = 0; i < imagesShownTimeList.times.length; i++) {
 
-            if (parseInt(imagesShownTimeList.times[i].dateImageShown) >= timeOfPointInMs) {
+            if (parseInt(imagesShownTimeList.times[i].date) >= timeOfPointInMs) {
               image.src = JSON.stringify(imagesShownTimeList.times[i].imageFile).split('"').join('');
               break;
             }

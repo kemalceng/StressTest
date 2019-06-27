@@ -270,7 +270,7 @@
           calculationTestTotalValue = correctness ? +selection : 0;
         }
 
-        imagesShownTimeList.push({ imageFile: askedImage.src.substr(askedImage.src.indexOf("resource")), date: lastImageShownTime, dateAnswered: Date.now(), correct: correctness });
+        imagesShownTimeList.push({ imageFile: askedImage.src, date: lastImageShownTime, dateAnswered: Date.now(), correct: correctness });
 
         if (++sdmtImageIndex < imageSequence.length) {
           setImage();
@@ -497,7 +497,7 @@
         //console.log("imagesShownTimeList:", imagesShownTimeList);
         var i = edaInitIndex, j = 0, h = hrInitIndex, t = temperatureInitIndex;
         while (i < edaDataLength && j < imagesShownTimeList.times.length) {
-          var diff = imagesShownTimeList.times[j].dateAnswered - imagesShownTimeList.times[j].dateImageShown;
+          var diff = imagesShownTimeList.times[j].dateAnswered - imagesShownTimeList.times[j].date;
 
           var hrDataInInterval = [], temperatureDataInInterval = [], edaDataInInterval = [];
           var count = 0;
@@ -978,7 +978,7 @@
 
         isAdjustTimeModeOn = document.getElementById("adjustTimeModeOn").checked;
         if (isAdjustTimeModeOn) {
-          adjustmentInMs = parseInt(imagesShownTimeList.times[0].dateImageShown) - (timeOfPoint * 1000);
+          adjustmentInMs = parseInt(imagesShownTimeList.times[0].date) - (timeOfPoint * 1000);
           console.log("Adjustment: " + adjustmentInMs);
 
           prepareDurationsData();
@@ -994,10 +994,10 @@
 
         console.log("setImageAtTime:" + timeOfPointInMs);
 
-        if (imagesShownTimeList != [] && parseInt(imagesShownTimeList.times[0].dateImageShown) <= timeOfPointInMs) {
+        if (imagesShownTimeList != [] && parseInt(imagesShownTimeList.times[0].date) <= timeOfPointInMs) {
           for (var i = 0; i < imagesShownTimeList.times.length; i++) {
 
-            if (parseInt(imagesShownTimeList.times[i].dateImageShown) >= timeOfPointInMs) {
+            if (parseInt(imagesShownTimeList.times[i].date) >= timeOfPointInMs) {
               askedImage.src = JSON.stringify(imagesShownTimeList.times[i].imageFile).split('"').join('');
               break;
             }
