@@ -966,7 +966,7 @@
       }
 
       function onClick(e) {
-        var timeOfPoint = edaInitTime + (e.dataPoint.x * increment);
+        var timeOfPoint = edaInitTime + (e.dataPoint.x * increment) - preRestIntervalOfRecord;
         setImageAtTime(timeOfPoint);
       }
 
