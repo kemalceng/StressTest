@@ -751,6 +751,44 @@
         chart.render();
       }
 
+      function drawEcgGraphics(splitted, initTime, frequency, chartSelection) {
+        var contentsAsDataPoint = [];
+        // Increment in ms
+        increment = (1 / frequency);
+
+        for (var i = 2, time = initTime; i < splitted.length; i++ , time += increment) {
+          //contentsAsDataPoint.push({ x: time,  y: parseFloat(splitted[i]) } );
+          contentsAsDataPoint.push({ y: parseFloat(splitted[i]) });
+        }
+
+        graphData = [
+          {
+            showInLegend: false,
+            click: onClick,
+            type: "line",
+            dataPoints: contentsAsDataPoint
+          }
+        ];
+
+        // Chart
+        var chart = new CanvasJS.Chart(chartSelection, {
+          zoomEnabled: true,
+          panEnabled: true,
+          legend: {
+            horizontalAlign: "right",
+            verticalAlign: "center"
+          },
+          axisY: {
+            includeZero: false
+          },
+          title: {
+            text: "ECG"
+          },
+          data: graphData
+        });
+        chart.render();
+      }
+
       function myTrim(x) {
         return x.replace(/^\s+|\s+$/gm, '');
       }
