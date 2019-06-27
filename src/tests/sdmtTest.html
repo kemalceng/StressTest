@@ -795,8 +795,6 @@
 
       function drawEcgGraphics(splitted, initTime, frequency, chartSelection) {
         var contentsAsDataPoint = [];
-        // Increment in ms
-        increment = (1 / frequency);
 
         for (var i = 2, time = initTime; i < splitted.length; i++ , time += increment) {
           //contentsAsDataPoint.push({ x: time,  y: parseFloat(splitted[i]) } );

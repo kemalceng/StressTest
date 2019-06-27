@@ -353,7 +353,7 @@
       function drawEdaGraphics(splitted, initTime, frequency, chartSelection) {
         var contentsAsDataPoint = [];
         // Increment in ms
-        increment = (1 / frequency);
+        increment = (1 / frequency) * 1000;
         var interval = intervalOfRecord;
         pointsInInterval = frequency * (interval / 1000);
         console.log('Freq: ' + frequency + ',  PointsForOneImage: ' + pointsInInterval);
@@ -452,8 +452,6 @@
 
       function drawEcgGraphics(splitted, initTime, frequency, chartSelection) {
         var contentsAsDataPoint = [];
-        // Increment in ms
-        increment = (1 / frequency);
 
         pointsInInterval = frequency * (intervalOfRecord / 1000);
         console.log('Freq: ' + frequency + ',  PointsForOneImage: ' + pointsInInterval);
