@@ -730,7 +730,7 @@
         var contentsAsDataPoint = [];
 
         // Increment in ms
-        increment = (1 / frequency);
+        increment = (1 / frequency) * 1000;
 
         for (var i = 2, time = initTime; i < splitted.length; i++ , time += increment) {
           //contentsAsDataPoint.push({ x: time,  y: parseFloat(splitted[i]) } );
@@ -989,7 +989,7 @@
       }
 
       function setImageAtTime(timeOfPoint) {
-        let timeOfPointInMs = timeOfPoint * 1000;
+        let timeOfPointInMs = timeOfPoint;
         timeOfPointInMs += adjustmentInMs;
 
         console.log("setImageAtTime:" + timeOfPointInMs);
